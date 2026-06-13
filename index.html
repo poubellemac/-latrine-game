@@ -119,7 +119,7 @@
 <!-- ══ PHASE 3 ══ -->
 <div id="screen-prep" class="screen active">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 3 — PRÉPARATION V5</p>
+  <p class="subtitle">PHASE 3 — PRÉPARATION V6</p>
 
   <div class="skin-bar">
     <div class="skin-icon">🌽</div>
@@ -189,7 +189,7 @@
 <!-- ══ PHASE 4 ══ -->
 <div id="screen-tir" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 4 — VISÉE V5</p>
+  <p class="subtitle">PHASE 4 — VISÉE V6</p>
 
   <div class="hud">
     <div class="hud-score">⭐ <span id="score-display">0</span></div>
@@ -212,7 +212,7 @@
 <!-- ══ PHASE 5 — NETTOYAGE ══ -->
 <div id="screen-nettoyage" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 5 — NETTOYAGE V5</p>
+  <p class="subtitle">PHASE 5 — NETTOYAGE V6</p>
 
   <div class="hud">
     <div class="hud-score">🧹 <span id="score-nettoyage">0</span> pts</div>
@@ -666,7 +666,7 @@ function scrubAt(x, y) {
   if(!netRunning) return;
   brushX=x; brushY=y;
   // Taille de la brosse : fixe pour l'instant
-  const brushR = netCW*0.08;
+  const brushR = netCW*0.04;
   // Effacer la saleté sous la brosse (destination-out efface les pixels)
   dirtCtx.globalCompositeOperation='destination-out';
   dirtCtx.beginPath();
