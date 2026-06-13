@@ -111,36 +111,7 @@
     font-size:0.78em; margin-bottom:10px;
   }
 
-  /* Zone de contrôle tactile */
-  #joystick-zone {
-    width:100%; max-width:340px;
-    height:80px;
-    background:#16213e;
-    border:2px solid #333;
-    border-radius:14px;
-    position:relative;
-    touch-action:none;
-    cursor:crosshair;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    user-select:none;
-    -webkit-user-select:none;
-  }
-  #joystick-zone .hint {
-    font-size:0.68em; color:#555; letter-spacing:1px; pointer-events:none;
-  }
-  /* Point de contact affiché */
-  #joystick-dot {
-    display:none;
-    position:absolute;
-    width:36px; height:36px;
-    border-radius:50%;
-    background:rgba(245,197,24,0.35);
-    border:2px solid #f5c518;
-    transform:translate(-50%,-50%);
-    pointer-events:none;
-  }
+
 </style>
 </head>
 <body>
@@ -148,7 +119,7 @@
 <!-- ══ PHASE 3 ══ -->
 <div id="screen-prep" class="screen active">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 3 — PRÉPARATION V4</p>
+  <p class="subtitle">PHASE 3 — PRÉPARATION V5</p>
 
   <div class="skin-bar">
     <div class="skin-icon">🌽</div>
@@ -218,7 +189,7 @@
 <!-- ══ PHASE 4 ══ -->
 <div id="screen-tir" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 4 — VISÉE V4</p>
+  <p class="subtitle">PHASE 4 — VISÉE V5</p>
 
   <div class="hud">
     <div class="hud-score">⭐ <span id="score-display">0</span></div>
@@ -226,7 +197,7 @@
   </div>
 
   <div id="toilet-wrap">
-    <canvas id="cvs"></canvas>
+    <canvas id="cvs" style="width:100%;height:100%;border-radius:12px;display:block;touch-action:none;"></canvas>
     <div id="countdown-overlay" class="show">3</div>
   </div>
 
@@ -235,17 +206,13 @@
     <span id="tir-timer-display">–</span>
   </div>
 
-  <!-- Zone de contrôle unique : glisser le doigt -->
-  <div id="joystick-zone">
-    <span class="hint">↑ ← GLISSE ICI POUR VISER → ↓</span>
-    <div id="joystick-dot"></div>
-  </div>
+  <div style="font-size:0.65em;color:#555;text-align:center;margin-top:4px;">🖐 Glisse sur les toilettes pour viser</div>
 </div>
 
 <!-- ══ PHASE 5 — NETTOYAGE ══ -->
 <div id="screen-nettoyage" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 5 — NETTOYAGE V4</p>
+  <p class="subtitle">PHASE 5 — NETTOYAGE V5</p>
 
   <div class="hud">
     <div class="hud-score">🧹 <span id="score-nettoyage">0</span> pts</div>
@@ -555,14 +522,15 @@ function drawToilet() {
   ctx.fill();
   // Trace
   ctx.drawImage(traceCanvas,0,0);
-  // Visée
+  // Visée : cercle guide + brosse emoji au centre
   ctx.beginPath(); ctx.arc(viseX,viseY,viseR,0,Math.PI*2);
-  ctx.strokeStyle='rgba(245,197,24,0.9)'; ctx.lineWidth=3; ctx.stroke();
-  ctx.strokeStyle='#f5c518'; ctx.lineWidth=2;
-  ctx.beginPath();
-  ctx.moveTo(viseX-10,viseY); ctx.lineTo(viseX+10,viseY);
-  ctx.moveTo(viseX,viseY-10); ctx.lineTo(viseX,viseY+10);
-  ctx.stroke();
+  ctx.strokeStyle='rgba(245,197,24,0.75)'; ctx.lineWidth=3; ctx.stroke();
+  // Brosse au centre
+  const brushSize=Math.max(16, viseR*0.9);
+  ctx.font=brushSize+'px serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('🪣', viseX, viseY);
 }
 
 function endTir() {
@@ -682,10 +650,21 @@ function drawNet() {
   netCtx.fill();
   // Saleté restante
   netCtx.drawImage(dirtCanvas,0,0);
+  // Brosse positionnée là où le doigt est
+  if(typeof brushX !== 'undefined') {
+    const bSize=Math.max(20, netCW*0.07);
+    netCtx.font=bSize+'px serif';
+    netCtx.textAlign='center';
+    netCtx.textBaseline='middle';
+    netCtx.fillText('🪣', brushX, brushY);
+  }
 }
+
+let brushX, brushY; // position de la brosse affichée
 
 function scrubAt(x, y) {
   if(!netRunning) return;
+  brushX=x; brushY=y;
   // Taille de la brosse : fixe pour l'instant
   const brushR = netCW*0.08;
   // Effacer la saleté sous la brosse (destination-out efface les pixels)
@@ -758,53 +737,41 @@ function endNet() {
 
 document.getElementById('btn-rejouer-net').addEventListener('click',()=>location.reload());
 
-// ── Joystick zone ─────────────────────────────────────────
-// Le delta est calculé par rapport au point de départ du touch.
-// Zone de sensibilité : 40px de déplacement = vitesse max.
-const SENS = 40;
+// ── Contrôle tactile direct sur le canvas phase 4 ────────
+const SENS = 50; // px de déplacement = pleine vitesse
 
 function setupJoystick() {
-  const zone=document.getElementById('joystick-zone');
-  const dot =document.getElementById('joystick-dot');
+  const cvs = document.getElementById('cvs');
+  const dpr = window.devicePixelRatio||1;
 
   function onStart(cx,cy) {
-    const rect=zone.getBoundingClientRect();
-    joyOriginX=cx-rect.left;
-    joyOriginY=cy-rect.top;
+    const rect=cvs.getBoundingClientRect();
+    joyOriginX=(cx-rect.left)*dpr;
+    joyOriginY=(cy-rect.top)*dpr;
     joystickActive=true;
-    dot.style.display='block';
-    dot.style.left=joyOriginX+'px';
-    dot.style.top =joyOriginY+'px';
   }
   function onMove(cx,cy) {
     if(!joystickActive) return;
-    const rect=zone.getBoundingClientRect();
-    const dx=(cx-rect.left)-joyOriginX;
-    const dy=(cy-rect.top) -joyOriginY;
-    // Normalise sur SENS px
-    joyDX=Math.max(-1,Math.min(1,dx/SENS));
-    joyDY=Math.max(-1,Math.min(1,dy/SENS));
-    // Déplace le point visuel
-    dot.style.left=(joyOriginX+dx)+'px';
-    dot.style.top =(joyOriginY+dy)+'px';
+    const rect=cvs.getBoundingClientRect();
+    const dx=((cx-rect.left)*dpr)-joyOriginX;
+    const dy=((cy-rect.top)*dpr)-joyOriginY;
+    joyDX=Math.max(-1,Math.min(1,dx/(SENS*dpr)));
+    joyDY=Math.max(-1,Math.min(1,dy/(SENS*dpr)));
   }
   function onEnd() {
     joystickActive=false;
     joyDX=0; joyDY=0;
-    dot.style.display='none';
   }
 
-  // Touch
-  zone.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.touches[0]; onStart(t.clientX,t.clientY); },{ passive:false });
-  zone.addEventListener('touchmove',  e=>{ e.preventDefault(); const t=e.touches[0]; onMove(t.clientX,t.clientY);  },{ passive:false });
-  zone.addEventListener('touchend',   e=>{ e.preventDefault(); onEnd(); },{ passive:false });
-  zone.addEventListener('touchcancel',e=>{ e.preventDefault(); onEnd(); },{ passive:false });
+  cvs.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.touches[0]; onStart(t.clientX,t.clientY); },{ passive:false });
+  cvs.addEventListener('touchmove',  e=>{ e.preventDefault(); const t=e.touches[0]; onMove(t.clientX,t.clientY);  },{ passive:false });
+  cvs.addEventListener('touchend',   e=>{ e.preventDefault(); onEnd(); },{ passive:false });
+  cvs.addEventListener('touchcancel',e=>{ e.preventDefault(); onEnd(); },{ passive:false });
 
-  // Souris (test desktop)
-  zone.addEventListener('mousedown', e=>{ onStart(e.clientX,e.clientY); });
-  zone.addEventListener('mousemove', e=>{ onMove(e.clientX,e.clientY);  });
-  zone.addEventListener('mouseup',   ()=>onEnd());
-  zone.addEventListener('mouseleave',()=>onEnd());
+  cvs.addEventListener('mousedown', e=>{ onStart(e.clientX,e.clientY); });
+  cvs.addEventListener('mousemove', e=>{ onMove(e.clientX,e.clientY);  });
+  cvs.addEventListener('mouseup',   ()=>onEnd());
+  cvs.addEventListener('mouseleave',()=>onEnd());
 }
 
 document.getElementById('btn-rejouer').addEventListener('click',()=>location.reload());
