@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LATRINE — Calibration Studio</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d0d14;
+    --panel:    #13131f;
+    --border:   #1e1e30;
+    --gold:     #f5c518;
+    --green:    #4ade80;
+    --red:      #e63946;
+    --blue:     #38bdf8;
+    --text:     #c8c8d8;
+    --muted:    #44445a;
+    --font:     'Courier New', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    grid-template-rows: 48px 1fr;
+    overflow: hidden;
+  }
+
+  /* ── Topbar ── */
+  #topbar {
+    grid-column: 1/-1;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+  }
+  #topbar h1 {
+    font-size: 0.85em;
+    letter-spacing: 4px;
+    color: var(--gold);
+  }
+  #topbar .tag {
+    font-size: 0.60em;
+    background: var(--border);
+    color: var(--muted);
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 2px;
+  }
+  #topbar .spacer { flex: 1; }
+  #topbar .live-score {
+    font-size: 1.1em;
+    color: var(--gold);
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+  #topbar .live-time {
+    font-size: 0.85em;
+    color: var(--red);
+    min-width: 60px;
+    text-align: right;
+  }
+  .top-btn {
+    padding: 6px 14px;
+    font-family: var(--font);
+    font-size: 0.70em;
+    letter-spacing: 2px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .top-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .top-btn.primary { background: var(--gold); color: #0d0d14; border-color: var(--gold); font-weight: bold; }
+  .top-btn.primary:hover { background: #d4a800; }
+  .top-btn.danger { border-color: var(--red); color: var(--red); }
+  .top-btn.danger:hover { background: var(--red); color: #fff; }
+
+  /* ── Zone jeu ── */
+  #game-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #canvas-wrap {
+    position: relative;
+    width: min(380px, calc(100vh - 180px) * 0.75);
+    aspect-ratio: 3/4;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(245,197,24,0.12);
+    border: 1px solid var(--border);
+  }
+
+  #cvs {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  #countdown-overlay {
+    display: none;
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.75);
+    align-items: center; justify-content: center;
+    font-size: 5em; font-weight: bold;
+    color: var(--gold);
+    border-radius: 12px;
+  }
+  #countdown-overlay.show { display: flex; }
+
+  /* Stats sous le canvas */
+  #live-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: min(380px, calc(100vh - 180px) * 0.75);
+  }
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .stat-label { font-size: 0.55em; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; }
+  .stat-val   { font-size: 1em; font-weight: bold; }
+  .stat-val.gold  { color: var(--gold); }
+  .stat-val.green { color: var(--green); }
+  .stat-val.red   { color: var(--red); }
+  .stat-val.blue  { color: var(--blue); }
+
+  /* ── Panneau paramètres ── */
+  #params-panel {
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .p-section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .p-section-title {
+    font-size: 0.60em;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .p-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 40px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+  .p-label {
+    font-size: 0.62em;
+    color: var(--muted);
+    letter-spacing: 1px;
+    line-height: 1.3;
+  }
+  .p-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+  .p-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(245,197,24,0.5);
+  }
+  .p-slider.green::-webkit-slider-thumb  { background: var(--green); box-shadow: 0 0 6px rgba(74,222,128,0.5); }
+  .p-slider.red::-webkit-slider-thumb    { background: var(--red);   box-shadow: 0 0 6px rgba(230,57,70,0.5);  }
+  .p-slider.blue::-webkit-slider-thumb   { background: var(--blue);  box-shadow: 0 0 6px rgba(56,189,248,0.5); }
+
+  .p-val {
+    font-size: 0.75em;
+    font-weight: bold;
+    color: var(--gold);
+    text-align: right;
+  }
+  .p-val.green { color: var(--green); }
+  .p-val.red   { color: var(--red);   }
+  .p-val.blue  { color: var(--blue);  }
+
+  /* Jauge score résultat */
+  #result-bar-wrap {
+    width: 100%;
+    margin-top: 4px;
+  }
+  .seuil-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.55em;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .bar-track {
+    height: 10px;
+    background: var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+  }
+  #result-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--red), var(--gold), var(--green));
+    border-radius: 5px;
+    transition: width 0.8s ease;
+  }
+  .seuil-mark {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(255,255,255,0.2);
+  }
+
+  /* Log */
+  #log {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.60em;
+    color: var(--muted);
+    line-height: 1.8;
+    max-height: 100px;
+    overflow-y: auto;
+  }
+  .log-entry { color: var(--green); }
+  .log-entry.warn { color: var(--gold); }
+  .log-entry.bad  { color: var(--red); }
+
+  /* Contrôle souris info */
+  #mouse-hint {
+    position: absolute;
+    bottom: 8px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.58em;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* Badges résultat */
+  #result-badges {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 6px;
+  }
+  .badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.65em;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border: 1px solid;
+  }
+  .badge.gold  { color: var(--gold);  border-color: var(--gold);  }
+  .badge.green { color: var(--green); border-color: var(--green); }
+  .badge.red   { color: var(--red);   border-color: var(--red);   }
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<div id="topbar">
+  <h1>🚽 LATRINE</h1>
+  <span class="tag">CALIBRATION STUDIO</span>
+  <span class="tag">PHASE 4 — TIR</span>
+  <div class="spacer"></div>
+  <span class="live-score">⭐ <span id="top-score">0</span></span>
+  <span class="live-time" id="top-time">–</span>
+  <button class="top-btn primary" id="btn-start">▶ LANCER</button>
+  <button class="top-btn danger"  id="btn-stop-game" disabled>⏹ STOP</button>
+  <button class="top-btn"         id="btn-reset-log">🗑 LOG</button>
+</div>
+
+<!-- ── Zone jeu ── -->
+<div id="game-zone">
+  <div id="canvas-wrap">
+    <canvas id="cvs"></canvas>
+    <div id="countdown-overlay" class="show">Prêt</div>
+  </div>
+
+  <div id="live-stats">
+    <div class="stat-card">
+      <div class="stat-label">TROU 🎯</div>
+      <div class="stat-val green" id="stat-trou">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">PORCELAINE</div>
+      <div class="stat-val blue" id="stat-porc">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">HORS ❌</div>
+      <div class="stat-val red" id="stat-hors">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">SCORE</div>
+      <div class="stat-val gold" id="stat-score">0</div>
+    </div>
+  </div>
+
+  <!-- Résultat après partie -->
+  <div id="result-bar-wrap" style="width:min(380px, calc(100vh - 180px) * 0.75);">
+    <div class="seuil-labels">
+      <span>0</span>
+      <span id="lbl-s1">–</span>
+      <span id="lbl-s2">–</span>
+      <span id="lbl-s3">–</span>
+    </div>
+    <div class="bar-track">
+      <div id="result-bar"></div>
+      <div class="seuil-mark" id="mark1"></div>
+      <div class="seuil-mark" id="mark2"></div>
+    </div>
+    <div id="result-badges"></div>
+  </div>
+
+  <div id="mouse-hint">🖱 Clic gauche maintenu + glissement = contrôle visée</div>
+</div>
+
+<!-- ── Panneau paramètres ── -->
+<div id="params-panel">
+
+  <!-- Tir -->
+  <div class="p-section">
+    <div class="p-section-title">🎯 PARAMÈTRES DE TIR</div>
+
+    <div class="p-row">
+      <span class="p-label">Contrôle<br>(1=dur 10=facile)</span>
+      <input type="range" class="p-slider" id="p-ctrl" min="1" max="10" step="1" value="5">
+      <span class="p-val" id="pv-ctrl">5</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Diamètre visée<br>(1=petit 10=large)</span>
+      <input type="range" class="p-slider" id="p-diam" min="1" max="10" step="1" value="5">
+      <span class="p-val" id="pv-diam">5</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Durée du tir (s)<br>(3+val secondes)</span>
+      <input type="range" class="p-slider" id="p-tir" min="1" max="10" step="1" value="5">
+      <span class="p-val" id="pv-tir">5 → <b id="pv-tir-s">8s</b></span>
+    </div>
+  </div>
+
+  <!-- Dérive -->
+  <div class="p-section">
+    <div class="p-section-title">🌀 DÉRIVE DE LA VISÉE</div>
+
+    <div class="p-row">
+      <span class="p-label">Vitesse dérive<br>(px/frame × CW)</span>
+      <input type="range" class="p-slider red" id="p-drift-spd" min="1" max="30" step="1" value="8">
+      <span class="p-val red" id="pv-drift-spd">8</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Fréq. changement<br>(frames entre chgt)</span>
+      <input type="range" class="p-slider red" id="p-drift-freq" min="10" max="150" step="5" value="60">
+      <span class="p-val red" id="pv-drift-freq">60</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Force joystick<br>(× vitesse dérive)</span>
+      <input type="range" class="p-slider green" id="p-joy" min="1" max="10" step="0.5" value="3">
+      <span class="p-val green" id="pv-joy">3</span>
+    </div>
+  </div>
+
+  <!-- Score -->
+  <div class="p-section">
+    <div class="p-section-title">⭐ COEFFICIENTS SCORE</div>
+
+    <div class="p-row">
+      <span class="p-label">Pts / touch trou</span>
+      <input type="range" class="p-slider green" id="p-c-trou" min="1" max="20" step="1" value="5">
+      <span class="p-val green" id="pv-c-trou">5</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Pts / touch porc.</span>
+      <input type="range" class="p-slider blue" id="p-c-porc" min="0" max="5" step="1" value="1">
+      <span class="p-val blue" id="pv-c-porc">1</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Pénalité / hors</span>
+      <input type="range" class="p-slider red" id="p-c-hors" min="0" max="10" step="1" value="2">
+      <span class="p-val red" id="pv-c-hors">2</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Seuil 🧹 (1 bala.)</span>
+      <input type="range" class="p-slider" id="p-s1" min="10" max="1000" step="10" value="120">
+      <span class="p-val" id="pv-s1">120</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Seuil 🧹🧹 (2 bala.)</span>
+      <input type="range" class="p-slider" id="p-s2" min="50" max="2000" step="10" value="250">
+      <span class="p-val" id="pv-s2">250</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Seuil 🧹🧹🧹 (3 bala.)</span>
+      <input type="range" class="p-slider" id="p-s3" min="100" max="3000" step="10" value="400">
+      <span class="p-val" id="pv-s3">400</span>
+    </div>
+  </div>
+
+  <!-- Mouches -->
+  <div class="p-section">
+    <div class="p-section-title">🪰 MOUCHES</div>
+    <div class="p-row">
+      <span class="p-label">Vitesse (‰ de CW)</span>
+      <input type="range" class="p-slider" id="p-m-spd" min="1" max="40" step="1" value="18">
+      <span class="p-val" id="pv-m-spd">18</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Taille (% de CW)</span>
+      <input type="range" class="p-slider" id="p-m-size" min="2" max="15" step="1" value="6">
+      <span class="p-val" id="pv-m-size">6</span>
+    </div>
+    <div class="p-row">
+      <span class="p-label">Bonus points</span>
+      <input type="range" class="p-slider green" id="p-m-bonus" min="50" max="2000" step="50" value="500">
+      <span class="p-val green" id="pv-m-bonus">500</span>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="p-section">
+    <div class="p-section-title">📋 LOG DES PARTIES</div>
+    <div id="log">En attente de la première partie...</div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// CANVAS & ÉTAT
+// ══════════════════════════════════════════════════════════
+const canvas = document.getElementById('cvs');
+const ctx    = canvas.getContext('2d');
+let CW, CH;
+
+let toilet = {};
+let viseX, viseY, viseR, viseSpeed;
+let driftDX=0, driftDY=0, driftSpeed=0, driftTimer=0, driftInterval=60;
+let joystickActive=false, joyDX=0, joyDY=0, joyOriginX=0, joyOriginY=0;
+
+let traceCanvas, traceCtx;
+let tirRunning=false, tirTimeLeft=0, tirInterval=null, tirRaf=null;
+let scoreTotal=0, pixTrou=0, pixPorc=0, pixHors=0;
+let partieCount=0;
+
+const MOUCHES = [
+  { x:0, y:0, vx:0, vy:0, size:0, bonus:500, multi:false, hit:false },
+  { x:0, y:0, vx:0, vy:0, size:0, bonus:0,   multi:true,  hit:false },
+  { x:0, y:0, vx:0, vy:0, size:0, bonus:300, multi:false, hit:false },
+];
+
+// ══════════════════════════════════════════════════════════
+// PARAMÈTRES (lus depuis les sliders)
+// ══════════════════════════════════════════════════════════
+function P(id) { return parseFloat(document.getElementById(id).value); }
+
+function getParams() {
+  return {
+    ctrl:      P('p-ctrl'),
+    diam:      P('p-diam'),
+    tirVal:    P('p-tir'),
+    driftSpd:  P('p-drift-spd'),
+    driftFreq: P('p-drift-freq'),
+    joyForce:  P('p-joy'),
+    cTrou:     P('p-c-trou'),
+    cPorc:     P('p-c-porc'),
+    cHors:     P('p-c-hors'),
+    s1:        P('p-s1'),
+    s2:        P('p-s2'),
+    s3:        P('p-s3'),
+    mSpd:      P('p-m-spd'),
+    mSize:     P('p-m-size'),
+    mBonus:    P('p-m-bonus'),
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+// SLIDERS — mise à jour affichage valeur
+// ══════════════════════════════════════════════════════════
+const SLIDER_MAP = [
+  ['p-ctrl','pv-ctrl'], ['p-diam','pv-diam'],
+  ['p-drift-spd','pv-drift-spd'], ['p-drift-freq','pv-drift-freq'],
+  ['p-joy','pv-joy'],
+  ['p-c-trou','pv-c-trou'], ['p-c-porc','pv-c-porc'], ['p-c-hors','pv-c-hors'],
+  ['p-s1','pv-s1'], ['p-s2','pv-s2'], ['p-s3','pv-s3'],
+  ['p-m-spd','pv-m-spd'], ['p-m-size','pv-m-size'], ['p-m-bonus','pv-m-bonus'],
+];
+
+SLIDER_MAP.forEach(([sid, vid]) => {
+  const sl = document.getElementById(sid);
+  const vl = document.getElementById(vid);
+  sl.addEventListener('input', () => {
+    vl.textContent = sl.value;
+    if(sid==='p-tir') {
+      document.getElementById('pv-tir-s').textContent = (3+parseInt(sl.value))+'s';
+    }
+    // Mise à jour live si partie en cours
+    if(tirRunning) applyParamsLive();
+  });
+});
+
+function applyParamsLive() {
+  const p = getParams();
+  viseR      = CW*(0.20 - p.diam*0.014);
+  viseSpeed  = CW*(0.008 + (10-p.ctrl)*0.004);
+  driftSpeed = CW*(0.001 * p.driftSpd);
+  driftInterval = p.driftFreq;
+  MOUCHES.forEach(m => {
+    m.size  = CW*(p.mSize/100);
+    m.bonus = p.mBonus;
+    const spd = CW*(p.mSpd/1000);
+    // Garder direction, changer vitesse
+    const len = Math.sqrt(m.vx**2+m.vy**2)||1;
+    m.vx = (m.vx/len)*spd;
+    m.vy = (m.vy/len)*spd;
+  });
+  updateSeuilsDisplay(p);
+}
+
+function updateSeuilsDisplay(p) {
+  const max = Math.max(p.s3*1.2, 100);
+  document.getElementById('lbl-s1').textContent = p.s1;
+  document.getElementById('lbl-s2').textContent = p.s2;
+  document.getElementById('lbl-s3').textContent = p.s3;
+  document.getElementById('mark1').style.left = (p.s1/max*100)+'%';
+  document.getElementById('mark2').style.left = (p.s2/max*100)+'%';
+}
+
+// ══════════════════════════════════════════════════════════
+// SETUP CANVAS
+// ══════════════════════════════════════════════════════════
+function setupCanvas() {
+  const wrap = document.getElementById('canvas-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const dpr  = window.devicePixelRatio||1;
+  CW = Math.round(rect.width*dpr);
+  CH = Math.round(rect.height*dpr);
+  canvas.width=CW; canvas.height=CH;
+
+  traceCanvas = document.createElement('canvas');
+  traceCanvas.width=CW; traceCanvas.height=CH;
+  traceCtx = traceCanvas.getContext('2d');
+
+  toilet = {
+    reservoir:  { x:CW*0.25, y:CH*0.03, w:CW*0.50, h:CH*0.13 },
+    cuvetteX:CW*0.50, cuvetteY:CH*0.54,
+    cuvetteRX:CW*0.40, cuvetteRY:CH*0.30,
+    trouX:CW*0.50, trouY:CH*0.57,
+    trouRX:CW*0.18, trouRY:CH*0.13,
+  };
+
+  const p = getParams();
+  viseX     = CW*0.50;
+  viseY     = CH*0.28;
+  viseR     = CW*(0.20 - p.diam*0.014);
+  viseSpeed = CW*(0.008 + (10-p.ctrl)*0.004);
+  driftSpeed   = CW*(0.001*p.driftSpd);
+  driftInterval= p.driftFreq;
+
+  const angle0 = Math.random()*Math.PI*2;
+  driftDX = Math.cos(angle0); driftDY = Math.sin(angle0);
+  driftTimer = 0;
+
+  MOUCHES.forEach(m => {
+    m.size  = CW*(p.mSize/100);
+    m.bonus = p.mBonus;
+    m.x = CW*(0.25+Math.random()*0.5);
+    m.y = CH*(0.35+Math.random()*0.3);
+    const a = Math.random()*Math.PI*2;
+    const spd = CW*(p.mSpd/1000);
+    m.vx=Math.cos(a)*spd; m.vy=Math.sin(a)*spd;
+    m.hit=false;
+  });
+
+  updateSeuilsDisplay(p);
+  drawToilet();
+}
+
+// ══════════════════════════════════════════════════════════
+// DESSIN
+// ══════════════════════════════════════════════════════════
+function drawToilet() {
+  ctx.clearRect(0,0,CW,CH);
+  ctx.fillStyle='#b5c4b1'; ctx.fillRect(0,0,CW,CH);
+
+  const r=toilet.reservoir;
+  ctx.fillStyle='#e8e8e8';
+  ctx.beginPath(); ctx.roundRect(r.x,r.y,r.w,r.h,10); ctx.fill();
+  ctx.strokeStyle='#ccc'; ctx.lineWidth=3; ctx.stroke();
+
+  ctx.fillStyle='#f0f0f0';
+  ctx.beginPath();
+  ctx.ellipse(toilet.cuvetteX,toilet.cuvetteY,toilet.cuvetteRX+CW*0.04,toilet.cuvetteRY+CH*0.04,0,0,Math.PI*2);
+  ctx.fill(); ctx.strokeStyle='#ccc'; ctx.lineWidth=3; ctx.stroke();
+
+  ctx.fillStyle='#fff';
+  ctx.beginPath();
+  ctx.ellipse(toilet.cuvetteX,toilet.cuvetteY,toilet.cuvetteRX,toilet.cuvetteRY,0,0,Math.PI*2);
+  ctx.fill(); ctx.strokeStyle='#ddd'; ctx.lineWidth=2; ctx.stroke();
+
+  ctx.fillStyle='#1a3a5c';
+  ctx.beginPath();
+  ctx.ellipse(toilet.trouX,toilet.trouY,toilet.trouRX,toilet.trouRY,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Trace
+  ctx.drawImage(traceCanvas,0,0);
+
+  // Mouches
+  MOUCHES.forEach(m => {
+    if(m.hit) return;
+    ctx.save();
+    ctx.font=m.size+'px serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    if(m.multi){ ctx.shadowColor='#e63946'; ctx.shadowBlur=10; }
+    ctx.fillText('🪰',m.x,m.y);
+    ctx.restore();
+  });
+
+  // Visée
+  ctx.beginPath(); ctx.arc(viseX,viseY,viseR,0,Math.PI*2);
+  ctx.strokeStyle='rgba(245,197,24,0.85)'; ctx.lineWidth=3; ctx.stroke();
+  const bSize=Math.max(16,viseR*0.9);
+  ctx.font=bSize+'px serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🪣',viseX,viseY);
+}
+
+function getZone(x,y) {
+  const dx1=(x-toilet.trouX)/toilet.trouRX, dy1=(y-toilet.trouY)/toilet.trouRY;
+  if(dx1*dx1+dy1*dy1<=1) return 'trou';
+  const dx2=(x-toilet.cuvetteX)/toilet.cuvetteRX, dy2=(y-toilet.cuvetteY)/toilet.cuvetteRY;
+  if(dx2*dx2+dy2*dy2<=1) return 'porc';
+  return 'hors';
+}
+
+// ══════════════════════════════════════════════════════════
+// BOUCLE DE JEU
+// ══════════════════════════════════════════════════════════
+function gameTick() {
+  if(!tirRunning) return;
+
+  // Dérive
+  driftTimer--;
+  if(driftTimer<=0) {
+    driftTimer = driftInterval + Math.floor(Math.random()*driftInterval*0.4);
+    const a=Math.random()*Math.PI*2;
+    driftDX=Math.cos(a); driftDY=Math.sin(a);
+  }
+  viseX += driftDX*driftSpeed;
+  viseY += driftDY*driftSpeed;
+
+  // Joystick
+  const p = getParams();
+  if(joystickActive) {
+    viseX += joyDX*viseSpeed*p.joyForce;
+    viseY += joyDY*viseSpeed*p.joyForce;
+  }
+
+  // Rebond bords
+  if(viseX<=viseR)    { viseX=viseR;    driftDX=Math.abs(driftDX); }
+  if(viseX>=CW-viseR) { viseX=CW-viseR; driftDX=-Math.abs(driftDX); }
+  if(viseY<=viseR)    { viseY=viseR;    driftDY=Math.abs(driftDY); }
+  if(viseY>=CH-viseR) { viseY=CH-viseR; driftDY=-Math.abs(driftDY); }
+
+  // Mouches
+  MOUCHES.forEach(m => {
+    if(m.hit) return;
+    if(Math.random()<0.05) {
+      const a=Math.random()*Math.PI*2;
+      const spd=CW*(p.mSpd/1000);
+      m.vx=Math.cos(a)*spd; m.vy=Math.sin(a)*spd;
+    }
+    m.x+=m.vx; m.y+=m.vy;
+    if(m.x<CW*0.05||m.x>CW*0.95){ m.vx*=-1; }
+    if(m.y<CH*0.05||m.y>CH*0.95){ m.vy*=-1; }
+    const dist=Math.sqrt((m.x-viseX)**2+(m.y-viseY)**2);
+    if(dist<viseR+m.size) {
+      m.hit=true;
+      if(m.multi) {
+        scoreTotal*=2;
+        addLog('🪰 MULTIPLICATEUR x2 ! Score → '+scoreTotal, 'warn');
+      } else {
+        scoreTotal+=m.bonus;
+        addLog('🪰 MOUCHE +'+m.bonus+' pts', 'entry');
+      }
+    }
+  });
+
+  // Zone
+  const zone=getZone(viseX,viseY);
+  traceCtx.beginPath();
+  traceCtx.arc(viseX,viseY,viseR*0.32,0,Math.PI*2);
+  if(zone==='trou')      { traceCtx.fillStyle='rgba(255,220,0,0.75)'; pixTrou++; }
+  else if(zone==='porc') { traceCtx.fillStyle='rgba(180,100,40,0.50)'; pixPorc++; }
+  else                   { traceCtx.fillStyle='rgba(100,60,20,0.40)';  pixHors++; }
+  traceCtx.fill();
+
+  scoreTotal = Math.max(0, pixTrou*p.cTrou + pixPorc*p.cPorc - pixHors*p.cHors);
+  // Ajouter bonus mouches (déjà ajoutés directement)
+
+  // Mise à jour UI
+  document.getElementById('stat-trou').textContent  = pixTrou;
+  document.getElementById('stat-porc').textContent  = pixPorc;
+  document.getElementById('stat-hors').textContent  = pixHors;
+  document.getElementById('stat-score').textContent = scoreTotal;
+  document.getElementById('top-score').textContent  = scoreTotal;
+
+  drawToilet();
+  tirRaf=requestAnimationFrame(gameTick);
+}
+
+// ══════════════════════════════════════════════════════════
+// DÉMARRAGE / ARRÊT
+// ══════════════════════════════════════════════════════════
+function startGame() {
+  setupCanvas();
+  scoreTotal=0; pixTrou=0; pixPorc=0; pixHors=0;
+  document.getElementById('stat-trou').textContent='0';
+  document.getElementById('stat-porc').textContent='0';
+  document.getElementById('stat-hors').textContent='0';
+  document.getElementById('stat-score').textContent='0';
+  document.getElementById('top-score').textContent='0';
+  document.getElementById('result-bar').style.width='0%';
+  document.getElementById('result-badges').innerHTML='';
+
+  document.getElementById('btn-start').disabled=true;
+  document.getElementById('btn-stop-game').disabled=false;
+
+  const p = getParams();
+  tirTimeLeft = 3 + p.tirVal;
+
+  // Countdown 3-2-1
+  const ov=document.getElementById('countdown-overlay');
+  ov.classList.add('show'); ov.textContent='3';
+  let n=3;
+  const cv=setInterval(()=>{
+    n--;
+    if(n<=0) {
+      clearInterval(cv);
+      ov.classList.remove('show');
+      beginTir();
+    } else {
+      ov.textContent=n;
+    }
+  },800);
+}
+
+function beginTir() {
+  tirRunning=true;
+  document.getElementById('top-time').textContent=tirTimeLeft+'s';
+  tirInterval=setInterval(()=>{
+    tirTimeLeft--;
+    document.getElementById('top-time').textContent=tirTimeLeft+'s';
+    if(tirTimeLeft<=0) endGame();
+  },1000);
+  tirRaf=requestAnimationFrame(gameTick);
+}
+
+function endGame() {
+  tirRunning=false;
+  cancelAnimationFrame(tirRaf);
+  clearInterval(tirInterval);
+  document.getElementById('top-time').textContent='–';
+  document.getElementById('btn-start').disabled=false;
+  document.getElementById('btn-stop-game').disabled=true;
+
+  const p = getParams();
+  partieCount++;
+
+  // Barre résultat
+  const max = Math.max(p.s3*1.3, 100);
+  const pct = Math.min(100, scoreTotal/max*100);
+  document.getElementById('result-bar').style.width=pct+'%';
+
+  // Badges balayettes
+  let bala=0, label='';
+  if(scoreTotal>=p.s3)      { bala=3; label='🧹🧹🧹 PARFAIT'; }
+  else if(scoreTotal>=p.s2) { bala=2; label='🧹🧹 BIEN'; }
+  else if(scoreTotal>=p.s1) { bala=1; label='🧹 PAS MAL'; }
+  else                       { label='❌ ESSAIE ENCORE'; }
+
+  const cls = bala===3?'gold':bala>=1?'green':'red';
+  document.getElementById('result-badges').innerHTML =
+    '<span class="badge '+cls+'">'+label+'</span>' +
+    '<span class="badge blue">Partie #'+partieCount+'</span>';
+
+  // Log
+  addLog(
+    'Partie #'+partieCount+' → '+scoreTotal+' pts | '+
+    '🎯'+pixTrou+' 🟤'+pixPorc+' ❌'+pixHors+' | '+label,
+    bala>=2?'entry':bala===1?'warn':'bad'
+  );
+}
+
+document.getElementById('btn-start').addEventListener('click', startGame);
+document.getElementById('btn-stop-game').addEventListener('click', ()=>{
+  if(tirRunning) endGame();
+});
+document.getElementById('btn-reset-log').addEventListener('click', ()=>{
+  document.getElementById('log').innerHTML='Log vidé.';
+});
+
+// ══════════════════════════════════════════════════════════
+// CONTRÔLE SOURIS
+// ══════════════════════════════════════════════════════════
+const SENS = 50;
+
+canvas.addEventListener('mousedown', e=>{
+  joystickActive=true;
+  const r=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  joyOriginX=(e.clientX-r.left)*dpr;
+  joyOriginY=(e.clientY-r.top)*dpr;
+});
+canvas.addEventListener('mousemove', e=>{
+  if(!joystickActive) return;
+  const r=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const dx=((e.clientX-r.left)*dpr)-joyOriginX;
+  const dy=((e.clientY-r.top)*dpr)-joyOriginY;
+  joyDX=Math.max(-1,Math.min(1,dx/(SENS*dpr)));
+  joyDY=Math.max(-1,Math.min(1,dy/(SENS*dpr)));
+});
+canvas.addEventListener('mouseup',    ()=>{ joystickActive=false; joyDX=0; joyDY=0; });
+canvas.addEventListener('mouseleave', ()=>{ joystickActive=false; joyDX=0; joyDY=0; });
+
+// ══════════════════════════════════════════════════════════
+// LOG
+// ══════════════════════════════════════════════════════════
+function addLog(txt, cls='entry') {
+  const log = document.getElementById('log');
+  const el  = document.createElement('div');
+  el.className='log-entry '+(cls||'');
+  const now=new Date();
+  el.textContent='['+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+'] '+txt;
+  log.appendChild(el);
+  log.scrollTop=log.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+window.addEventListener('resize', ()=>{ if(!tirRunning) setupCanvas(); });
+setupCanvas();
+updateSeuilsDisplay(getParams());
+drawToilet();
+</script>
+</body>
+</html>
