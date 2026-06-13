@@ -80,6 +80,48 @@
   .recap-val { color:#4ade80; font-weight:bold; }
   .popup-btn { margin-top:18px; padding:11px 26px; background:#f5c518; color:#1a1a2e; border:none; border-radius:8px; font-size:0.92em; font-family:'Courier New',monospace; font-weight:bold; letter-spacing:2px; cursor:pointer; }
 
+  /* ── Carte niveaux ── */
+  #map-scroll {
+    width:100%; max-width:380px;
+    height: 55vh;
+    overflow-y: auto;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  #map-inner {
+    position: relative;
+    width: 100%;
+    padding: 16px 0 30px;
+  }
+  /* Chemin SVG en fond */
+  #map-path {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    pointer-events:none;
+  }
+  .level-node {
+    position: absolute;
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    border: 3px solid transparent;
+    transition: transform 0.15s;
+    z-index: 2;
+  }
+  .level-node:active { transform: translate(-50%,-50%) scale(0.92); }
+  .level-node.unlocked  { background:#16213e; border-color:#f5c518; }
+  .level-node.locked    { background:#111; border-color:#333; cursor:default; opacity:0.5; }
+  .level-node.completed { background:#16213e; border-color:#4ade80; }
+  .level-node.current   { background:#0f3460; border-color:#f5c518; box-shadow:0 0 12px rgba(245,197,24,0.6); }
+  .level-num  { font-size:0.85em; font-weight:bold; color:#fff; line-height:1; }
+  .level-bala { font-size:0.65em; line-height:1; margin-top:2px; }
+
+  /* Popup choix niveau */
+  #popup-level .popup-box { text-align:left; }
+  .level-popup-title { font-size:1em; color:#f5c518; letter-spacing:2px; margin-bottom:14px; text-align:center; }
+
   /* ── Phase 4 ── */
   #screen-tir { justify-content:flex-start; }
 
@@ -116,10 +158,47 @@
 </head>
 <body>
 
-<!-- ══ PHASE 3 ══ -->
-<div id="screen-prep" class="screen active">
+<!-- ══ PHASE 1 — CHOIX DU LEVEL ══ -->
+<div id="screen-map" class="screen active">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 3 — PRÉPARATION V6</p>
+  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V8</p>
+
+  <!-- HUD ressources -->
+  <div style="display:flex;justify-content:space-between;width:100%;max-width:380px;margin-bottom:12px;">
+    <div style="background:#16213e;border:1px solid #333;border-radius:8px;padding:6px 14px;font-size:0.78em;">
+      🧻 <span id="hud-vies">5</span> vies
+    </div>
+    <div style="background:#16213e;border:1px solid #333;border-radius:8px;padding:6px 14px;font-size:0.78em;">
+      🧹 <span id="hud-rouleaux">0</span> rouleaux
+    </div>
+  </div>
+
+  <div id="map-scroll">
+    <div id="map-inner">
+      <svg id="map-path" preserveAspectRatio="none"></svg>
+      <!-- Les noeuds sont générés en JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Popup choix niveau -->
+<div class="popup-overlay" id="popup-level">
+  <div class="popup-box">
+    <div class="level-popup-title" id="lvl-popup-title">NIVEAU 1</div>
+    <div class="recap-row"><span class="recap-label">Meilleur score</span><span class="recap-val" id="lvl-best-score">–</span></div>
+    <div class="recap-row"><span class="recap-label">Balayettes</span><span class="recap-val" id="lvl-best-bala">–</span></div>
+    <div class="recap-row"><span class="recap-label">Statut</span><span class="recap-val" id="lvl-statut">–</span></div>
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="popup-btn" style="flex:1;margin-top:0;" onclick="document.getElementById('popup-level').classList.remove('show')">✕ ANNULER</button>
+      <button class="popup-btn" style="flex:1;margin-top:0;background:#4ade80;" id="lvl-btn-jouer">▶ JOUER</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PHASE 3 ══ -->
+<div id="screen-prep" class="screen">
+  <h1>🚽 LATRINE</h1>
+  <p class="subtitle">PHASE 3 — PRÉPARATION V8</p>
 
   <div class="skin-bar">
     <div class="skin-icon">🌽</div>
@@ -189,7 +268,7 @@
 <!-- ══ PHASE 4 ══ -->
 <div id="screen-tir" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 4 — VISÉE V6</p>
+  <p class="subtitle">PHASE 4 — VISÉE V8</p>
 
   <div class="hud">
     <div class="hud-score">⭐ <span id="score-display">0</span></div>
@@ -212,7 +291,7 @@
 <!-- ══ PHASE 5 — NETTOYAGE ══ -->
 <div id="screen-nettoyage" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 5 — NETTOYAGE V6</p>
+  <p class="subtitle">PHASE 5 — NETTOYAGE V8</p>
 
   <div class="hud">
     <div class="hud-score">🧹 <span id="score-nettoyage">0</span> pts</div>
@@ -253,22 +332,163 @@
   </div>
 </div>
 
-<!-- Popup résultat nettoyage -->
-<div class="popup-overlay" id="popup-net">
-  <div class="popup-box">
-    <div class="popup-title">✨ RÉSULTAT FINAL</div>
-    <div class="recap-row"><span class="recap-label">Score tir</span><span class="recap-val" id="rn-score-tir"></span></div>
-    <div class="recap-row"><span class="recap-label">Score nettoyage</span><span class="recap-val" id="rn-score-net"></span></div>
-    <div class="recap-row"><span class="recap-label">Nettoyé</span><span class="recap-val" id="rn-pct"></span></div>
-    <div class="recap-row" style="border-top:2px solid #f5c518;margin-top:8px;padding-top:8px;">
-      <span class="recap-label" style="color:#fff;font-weight:bold;">TOTAL</span>
-      <span class="recap-val" style="color:#f5c518;font-size:1.1em;" id="rn-total"></span>
+<!-- ══ PHASE 6 — RÉSULTAT ══ -->
+<div id="screen-resultat" class="screen">
+  <h1>🚽 LATRINE</h1>
+  <p class="subtitle">PHASE 6 — RÉSULTAT V8</p>
+
+  <!-- Balayettes gagnées -->
+  <div id="balayettes-display" style="font-size:3.5em;text-align:center;margin:18px 0 6px;letter-spacing:8px;">🧹🧹🧹</div>
+  <div id="balayettes-label" style="font-size:0.72em;color:#aaa;text-align:center;letter-spacing:2px;margin-bottom:22px;">CALCUL EN COURS...</div>
+
+  <!-- Scores détaillés -->
+  <div style="width:100%;max-width:340px;background:#16213e;border:1px solid #333;border-radius:12px;padding:16px;margin-bottom:16px;">
+    <div class="recap-row"><span class="recap-label">Score tir</span><span class="recap-val" id="res-tir">–</span></div>
+    <div class="recap-row"><span class="recap-label">Dans le trou 🎯</span><span class="recap-val" id="res-trou">–</span></div>
+    <div class="recap-row"><span class="recap-label">Score nettoyage</span><span class="recap-val" id="res-net">–</span></div>
+    <div class="recap-row"><span class="recap-label">Nettoyé</span><span class="recap-val" id="res-pct">–</span></div>
+    <div style="border-top:2px solid #f5c518;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:0.82em;color:#fff;font-weight:bold;letter-spacing:2px;">TOTAL</span>
+      <span style="font-size:1.4em;color:#f5c518;font-weight:bold;" id="res-total">–</span>
     </div>
-    <button class="popup-btn" id="btn-rejouer-net">🔄 REJOUER</button>
   </div>
+
+  <!-- Barre de score visuelle -->
+  <div style="width:100%;max-width:340px;margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;font-size:0.62em;color:#555;margin-bottom:4px;">
+      <span>0</span><span id="res-seuil1">–</span><span id="res-seuil2">–</span><span id="res-seuil3">–</span>
+    </div>
+    <div style="position:relative;background:#0f3460;border-radius:8px;height:18px;overflow:hidden;">
+      <div id="res-barre" style="height:100%;width:0%;background:linear-gradient(90deg,#e63946,#f5c518,#4ade80);border-radius:8px;transition:width 1s ease;"></div>
+      <!-- Marqueurs seuils -->
+      <div id="mark1" style="position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.3);"></div>
+      <div id="mark2" style="position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.3);"></div>
+    </div>
+  </div>
+
+  <button class="btn-yellow" id="btn-rejouer-final">🔄 REJOUER</button>
+  <button class="btn-green" style="display:block;" id="btn-niveau-suivant">▶ NIVEAU SUIVANT</button>
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════════
+// PHASE 1 — CARTE DES NIVEAUX
+// ══════════════════════════════════════════════════════════
+
+// Données des niveaux (simulées — viendront d'une BDD plus tard)
+// balayettes: 0=jamais joué, 1/2/3=score obtenu, -1=locked
+const LEVELS = [
+  { id:1, bala:3, score:480, locked:false },
+  { id:2, bala:2, score:310, locked:false },
+  { id:3, bala:1, score:145, locked:false },
+  { id:4, bala:0, score:0,   locked:false }, // débloqué mais pas joué
+  { id:5, bala:-1,score:0,   locked:true  },
+  { id:6, bala:-1,score:0,   locked:true  },
+  { id:7, bala:-1,score:0,   locked:true  },
+  { id:8, bala:-1,score:0,   locked:true  },
+  { id:9, bala:-1,score:0,   locked:true  },
+  { id:10,bala:-1,score:0,   locked:true  },
+];
+
+let selectedLevel = null;
+
+function buildMap() {
+  const inner = document.getElementById('map-inner');
+  const svgEl = document.getElementById('map-path');
+  const W = inner.offsetWidth;
+
+  // Positions en zigzag
+  const positions = LEVELS.map((lvl, i) => {
+    const row = i;
+    const col = (i % 2 === 0) ? 0.25 : 0.75; // alternance gauche/droite
+    return {
+      x: W * col,
+      y: 60 + row * 80
+    };
+  });
+
+  // Hauteur totale
+  const totalH = 60 + (LEVELS.length - 1) * 80 + 60;
+  inner.style.height = totalH + 'px';
+  svgEl.setAttribute('viewBox', '0 0 ' + W + ' ' + totalH);
+  svgEl.setAttribute('width', W);
+  svgEl.setAttribute('height', totalH);
+
+  // Dessiner le chemin entre les noeuds
+  let pathD = '';
+  positions.forEach((p, i) => {
+    if (i === 0) pathD += 'M ' + p.x + ' ' + p.y;
+    else {
+      const prev = positions[i-1];
+      const mx = (prev.x + p.x) / 2;
+      pathD += ' C ' + mx + ' ' + prev.y + ', ' + mx + ' ' + p.y + ', ' + p.x + ' ' + p.y;
+    }
+  });
+  svgEl.innerHTML = '<path d="' + pathD + '" stroke="#333" stroke-width="6" fill="none" stroke-dasharray="8,6"/>';
+
+  // Créer les noeuds
+  LEVELS.forEach((lvl, i) => {
+    const pos = positions[i];
+    const node = document.createElement('div');
+    node.className = 'level-node';
+
+    if (lvl.locked)       node.classList.add('locked');
+    else if (lvl.bala===0) node.classList.add('current');
+    else                   node.classList.add('completed');
+
+    node.style.left = pos.x + 'px';
+    node.style.top  = pos.y + 'px';
+
+    // Emoji thème (préhistoire → futur)
+    const themes = ['🪨','🏛️','⚔️','🏰','⚓','🎩','🚂','✈️','🚀','🛸'];
+    const icon = lvl.locked ? '🔒' : themes[i] || '🚽';
+
+    node.innerHTML =
+      '<div style="font-size:1.3em;">' + icon + '</div>' +
+      '<div class="level-num">' + lvl.id + '</div>' +
+      '<div class="level-bala">' + balaStr(lvl.bala) + '</div>';
+
+    if (!lvl.locked) {
+      node.addEventListener('click', () => openLevelPopup(lvl));
+    }
+    inner.appendChild(node);
+  });
+
+  // Scroll vers le niveau actuel
+  const currentIdx = LEVELS.findIndex(l => l.bala === 0 && !l.locked);
+  if (currentIdx >= 0) {
+    setTimeout(() => {
+      const scrollTarget = Math.max(0, positions[currentIdx].y - 150);
+      document.getElementById('map-scroll').scrollTop = scrollTarget;
+    }, 100);
+  }
+}
+
+function balaStr(bala) {
+  if (bala === -1) return '🔒';
+  if (bala === 0)  return '▶';
+  return '🧹'.repeat(bala) + '⬜'.repeat(3 - bala);
+}
+
+function openLevelPopup(lvl) {
+  selectedLevel = lvl;
+  document.getElementById('lvl-popup-title').textContent = 'NIVEAU ' + lvl.id;
+  document.getElementById('lvl-best-score').textContent  = lvl.score > 0 ? lvl.score + ' pts' : '–';
+  document.getElementById('lvl-best-bala').textContent   = lvl.bala > 0 ? balaStr(lvl.bala) : '–';
+  document.getElementById('lvl-statut').textContent      =
+    lvl.bala === 0 ? 'NOUVEAU' :
+    lvl.bala === 3 ? 'PARFAIT ✅' : 'À AMÉLIORER';
+  document.getElementById('popup-level').classList.add('show');
+}
+
+document.getElementById('lvl-btn-jouer').addEventListener('click', () => {
+  document.getElementById('popup-level').classList.remove('show');
+  document.getElementById('screen-map').classList.remove('active');
+  document.getElementById('screen-prep').classList.add('active');
+});
+
+buildMap();
+
 // ══════════════════════════════════════════════════════════
 // PHASE 3
 // ══════════════════════════════════════════════════════════
@@ -726,16 +946,8 @@ function setupNetTouch() {
 function endNet() {
   netRunning=false;
   clearInterval(netInterval);
-  // Résultat final
-  const total=scoreTotal+netScoreTotal;
-  document.getElementById('rn-score-tir').textContent=scoreTotal+' pts';
-  document.getElementById('rn-score-net').textContent=netScoreTotal+' pts';
-  document.getElementById('rn-pct').textContent=document.getElementById('net-pct').textContent+' nettoyé';
-  document.getElementById('rn-total').textContent=total+' pts 🏆';
-  document.getElementById('popup-net').classList.add('show');
+  setTimeout(()=>startPhase6(), 300);
 }
-
-document.getElementById('btn-rejouer-net').addEventListener('click',()=>location.reload());
 
 // ── Contrôle tactile direct sur le canvas phase 4 ────────
 const SENS = 50; // px de déplacement = pleine vitesse
@@ -775,6 +987,79 @@ function setupJoystick() {
 }
 
 document.getElementById('btn-rejouer').addEventListener('click',()=>location.reload());
+
+// ══════════════════════════════════════════════════════════
+// PHASE 6 — RÉSULTAT
+// ══════════════════════════════════════════════════════════
+// Seuils balayettes (sur score max théorique ~600pts)
+const SEUIL_X = 120; // 1 balayette
+const SEUIL_Y = 250; // 2 balayettes
+const SEUIL_Z = 400; // 3 balayettes
+const SCORE_MAX = 600;
+
+function startPhase6() {
+  document.getElementById('screen-nettoyage').classList.remove('active');
+  document.getElementById('screen-resultat').classList.add('active');
+
+  const total = scoreTotal + netScoreTotal;
+  const pct   = document.getElementById('net-pct').textContent;
+
+  // Remplir les chiffres
+  document.getElementById('res-tir').textContent   = scoreTotal + ' pts';
+  document.getElementById('res-trou').textContent  = pixTrou + ' touches';
+  document.getElementById('res-net').textContent   = netScoreTotal + ' pts';
+  document.getElementById('res-pct').textContent   = pct;
+  document.getElementById('res-total').textContent = total + ' pts';
+
+  // Seuils affichés
+  document.getElementById('res-seuil1').textContent = SEUIL_X;
+  document.getElementById('res-seuil2').textContent = SEUIL_Y;
+  document.getElementById('res-seuil3').textContent = SEUIL_Z;
+
+  // Marqueurs sur la barre
+  document.getElementById('mark1').style.left = (SEUIL_X/SCORE_MAX*100)+'%';
+  document.getElementById('mark2').style.left = (SEUIL_Y/SCORE_MAX*100)+'%';
+
+  // Barre de score animée
+  setTimeout(()=>{
+    const pctBarre = Math.min(100, Math.round(total/SCORE_MAX*100));
+    document.getElementById('res-barre').style.width = pctBarre+'%';
+  }, 200);
+
+  // Balayettes
+  let balayettes = 0;
+  let label = '';
+  if (total >= SEUIL_Z)      { balayettes=3; label='SCORE PARFAIT ! 3 BALAYETTES'; }
+  else if (total >= SEUIL_Y) { balayettes=2; label='BIEN JOUÉ ! 2 BALAYETTES'; }
+  else if (total >= SEUIL_X) { balayettes=1; label='PAS MAL ! 1 BALAYETTE'; }
+  else                        { balayettes=0; label='ESSAIE ENCORE...'; }
+
+  // Animation apparition balayettes
+  const icons = ['⬜','⬜','⬜'];
+  for(let i=0;i<balayettes;i++) icons[i]='🧹';
+  document.getElementById('balayettes-display').textContent = icons.join('');
+  document.getElementById('balayettes-label').textContent = label;
+
+  // Animation séquentielle si balayettes > 0
+  if(balayettes > 0) {
+    const disp = document.getElementById('balayettes-display');
+    disp.textContent='⬜⬜⬜';
+    let shown=0;
+    const iv=setInterval(()=>{
+      shown++;
+      const arr=['⬜','⬜','⬜'];
+      for(let i=0;i<shown;i++) arr[i]='🧹';
+      disp.textContent=arr.join('');
+      if(shown>=balayettes) clearInterval(iv);
+    },500);
+  }
+}
+
+document.getElementById('btn-rejouer-final').addEventListener('click',()=>location.reload());
+document.getElementById('btn-niveau-suivant').addEventListener('click',()=>{
+  // Pour l'instant : rejouer (le choix de niveau viendra plus tard)
+  location.reload();
+});
 </script>
 </body>
 </html>
