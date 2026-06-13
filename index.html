@@ -12,16 +12,25 @@
     color: #fff;
     font-family: 'Courier New', monospace;
     height: 100dvh;
+    max-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 12px;
+    justify-content: flex-start;
+    padding: 10px 12px;
     overflow: hidden;
+  }
+
+  /* Chaque écran ne dépasse pas la hauteur dispo */
+  .screen {
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 380px; }
   .screen.active { display: flex; }
+  #screen-tir, #screen-nettoyage { overflow: hidden; }
 
   h1 { font-size: 1.3em; letter-spacing: 4px; color: #f5c518; margin-bottom: 3px; text-align: center; }
   .subtitle { font-size: 0.70em; color: #888; margin-bottom: 18px; text-align: center; letter-spacing: 2px; }
@@ -161,7 +170,7 @@
 <!-- ══ PHASE 1 — CHOIX DU LEVEL ══ -->
 <div id="screen-map" class="screen active">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V9</p>
+  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V10</p>
 
   <!-- HUD ressources -->
   <div style="display:flex;justify-content:space-between;width:100%;max-width:380px;margin-bottom:12px;">
@@ -198,7 +207,7 @@
 <!-- ══ PHASE 3 ══ -->
 <div id="screen-prep" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 3 — PRÉPARATION V9</p>
+  <p class="subtitle">PHASE 3 — PRÉPARATION V10</p>
 
   <div class="skin-bar">
     <div class="skin-icon">🌽</div>
@@ -268,7 +277,7 @@
 <!-- ══ PHASE 4 ══ -->
 <div id="screen-tir" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 4 — VISÉE V9</p>
+  <p class="subtitle">PHASE 4 — VISÉE V10</p>
 
   <div class="hud">
     <div class="hud-score">⭐ <span id="score-display">0</span></div>
@@ -291,7 +300,7 @@
 <!-- ══ PHASE 5 — NETTOYAGE ══ -->
 <div id="screen-nettoyage" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 5 — NETTOYAGE V9</p>
+  <p class="subtitle">PHASE 5 — NETTOYAGE V10</p>
 
   <div class="hud">
     <div class="hud-score">🧹 <span id="score-nettoyage">0</span> pts</div>
@@ -340,7 +349,7 @@
 <!-- ══ PHASE 6 — RÉSULTAT ══ -->
 <div id="screen-resultat" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 6 — RÉSULTAT V9</p>
+  <p class="subtitle">PHASE 6 — RÉSULTAT V10</p>
 
   <!-- Balayettes gagnées -->
   <div id="balayettes-display" style="font-size:3.5em;text-align:center;margin:18px 0 6px;letter-spacing:8px;">🧹🧹🧹</div>
@@ -490,6 +499,7 @@ document.getElementById('lvl-btn-jouer').addEventListener('click', () => {
   document.getElementById('popup-level').classList.remove('show');
   document.getElementById('screen-map').classList.remove('active');
   document.getElementById('screen-prep').classList.add('active');
+  startPrep(); // démarre les curseurs maintenant
 });
 
 buildMap();
@@ -557,8 +567,13 @@ function doStop() {
 
 document.getElementById('btn-stop').addEventListener('click', doStop);
 
-requestAnimationFrame(animatePrep);
-startPrepTimer();
+// Ne démarre PAS automatiquement — lancé par startPrep() depuis la carte
+function startPrep() {
+  prepStopped=false; prepTime=10; lastTs=null;
+  document.getElementById('btn-stop').disabled=false;
+  requestAnimationFrame(animatePrep);
+  startPrepTimer();
+}
 
 // ══════════════════════════════════════════════════════════
 // PHASE 4
@@ -703,10 +718,12 @@ function gameTick() {
   viseX += driftDX * driftSpeed;
   viseY += driftDY * driftSpeed;
 
-  // Correction du joueur via joystick (contrecarre la dérive)
+  // Correction du joueur via joystick
+  // Le joueur pousse dans la direction du glissement → la visée suit ce sens
+  // La vitesse joueur est 3x la dérive pour qu'on puisse toujours reprendre le contrôle
   if(joystickActive) {
-    viseX += joyDX * viseSpeed;
-    viseY += joyDY * viseSpeed;
+    viseX += joyDX * viseSpeed * 3;
+    viseY += joyDY * viseSpeed * 3;
   }
 
   // Rebond sur les bords (la visée ne sort pas du canvas)
@@ -1140,8 +1157,31 @@ function startPhase6() {
 
 document.getElementById('btn-rejouer-final').addEventListener('click',()=>location.reload());
 document.getElementById('btn-niveau-suivant').addEventListener('click',()=>{
-  // Pour l'instant : rejouer (le choix de niveau viendra plus tard)
-  location.reload();
+  // Retour à la carte — le niveau suivant sera débloqué
+  document.getElementById('screen-resultat').classList.remove('active');
+  document.getElementById('screen-map').classList.add('active');
+  // Débloquer le niveau suivant si besoin
+  if(selectedLevel) {
+    const idx = LEVELS.findIndex(l=>l.id===selectedLevel.id);
+    if(idx>=0) {
+      const total = scoreTotal + netScoreTotal;
+      // Mettre à jour balayettes
+      let bala = 0;
+      if(total>=SEUIL_Z) bala=3;
+      else if(total>=SEUIL_Y) bala=2;
+      else if(total>=SEUIL_X) bala=1;
+      if(bala > LEVELS[idx].bala) LEVELS[idx].bala=bala;
+      LEVELS[idx].score=Math.max(LEVELS[idx].score, total);
+      // Débloquer le suivant
+      if(idx+1<LEVELS.length && bala>=1) {
+        LEVELS[idx+1].locked=false;
+        if(LEVELS[idx+1].bala===-1) LEVELS[idx+1].bala=0;
+      }
+    }
+  }
+  // Reconstruire la carte
+  document.getElementById('map-inner').innerHTML='<svg id="map-path" preserveAspectRatio="none"></svg>';
+  buildMap();
 });
 </script>
 </body>
