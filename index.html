@@ -32,6 +32,70 @@
   .screen.active { display: flex; }
   #screen-tir, #screen-nettoyage { overflow: hidden; }
 
+  /* ── Panneau DEBUG ── */
+  #debug-panel {
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.92);
+    z-index:999;
+    flex-direction:column;
+    align-items:center;
+    padding:20px 16px;
+    overflow-y:auto;
+  }
+  #debug-panel.show { display:flex; }
+  #debug-panel h2 {
+    color:#f5c518; font-size:1em; letter-spacing:3px;
+    margin-bottom:4px; font-family:'Courier New',monospace;
+  }
+  #debug-panel .dbg-subtitle {
+    font-size:0.65em; color:#555; margin-bottom:18px;
+    font-family:'Courier New',monospace;
+  }
+  .dbg-section {
+    width:100%; max-width:360px;
+    background:#16213e; border:1px solid #333;
+    border-radius:10px; padding:14px; margin-bottom:12px;
+  }
+  .dbg-section-title {
+    font-size:0.70em; color:#f5c518; letter-spacing:2px;
+    margin-bottom:10px; font-family:'Courier New',monospace;
+  }
+  .dbg-row {
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:8px;
+  }
+  .dbg-label {
+    font-size:0.68em; color:#aaa; width:130px; flex-shrink:0;
+    font-family:'Courier New',monospace;
+  }
+  .dbg-slider { flex:1; accent-color:#f5c518; }
+  .dbg-val {
+    font-size:0.75em; color:#4ade80; font-weight:bold;
+    width:32px; text-align:right;
+    font-family:'Courier New',monospace;
+  }
+  .dbg-toggle {
+    display:flex; align-items:center; gap:8px; margin-bottom:8px;
+  }
+  .dbg-toggle input[type=checkbox] { accent-color:#f5c518; width:16px; height:16px; }
+  .dbg-toggle label { font-size:0.68em; color:#aaa; font-family:'Courier New',monospace; }
+  .dbg-btn {
+    width:100%; max-width:360px; padding:11px;
+    font-size:0.85em; font-family:'Courier New',monospace;
+    letter-spacing:2px; font-weight:bold;
+    background:#f5c518; color:#1a1a2e;
+    border:none; border-radius:8px; cursor:pointer; margin-bottom:8px;
+  }
+  .dbg-btn.red { background:#e63946; color:#fff; }
+  .dbg-btn.grey { background:#333; color:#aaa; }
+  #debug-hint {
+    position:fixed; bottom:8px; right:8px;
+    font-size:0.55em; color:#333;
+    font-family:'Courier New',monospace;
+    z-index:998; user-select:none;
+  }
+
   h1 { font-size: 1.3em; letter-spacing: 4px; color: #f5c518; margin-bottom: 3px; text-align: center; }
   .subtitle { font-size: 0.70em; color: #888; margin-bottom: 18px; text-align: center; letter-spacing: 2px; }
 
@@ -170,7 +234,7 @@
 <!-- ══ PHASE 1 — CHOIX DU LEVEL ══ -->
 <div id="screen-map" class="screen active">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V13</p>
+  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V14</p>
 
   <!-- HUD ressources -->
   <div style="display:flex;justify-content:space-between;width:100%;max-width:380px;margin-bottom:12px;">
@@ -208,7 +272,7 @@
 <!-- ══ PHASE 2 — ANIMATION ══ -->
 <div id="screen-anim" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 2 — ANIMATION V13</p>
+  <p class="subtitle">PHASE 2 — ANIMATION V14</p>
 
   <div id="anim-scene" style="
     width:100%; max-width:340px; aspect-ratio:3/4;
@@ -251,7 +315,7 @@
 <!-- ══ PHASE 3 ══ -->
 <div id="screen-prep" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 3 — PRÉPARATION V13</p>
+  <p class="subtitle">PHASE 3 — PRÉPARATION V14</p>
 
   <div class="skin-bar">
     <div class="skin-icon">🌽</div>
@@ -321,7 +385,7 @@
 <!-- ══ PHASE 4 ══ -->
 <div id="screen-tir" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 4 — VISÉE V13</p>
+  <p class="subtitle">PHASE 4 — VISÉE V14</p>
 
   <div class="hud">
     <div class="hud-score">⭐ <span id="score-display">0</span></div>
@@ -344,7 +408,7 @@
 <!-- ══ PHASE 5 — NETTOYAGE ══ -->
 <div id="screen-nettoyage" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 5 — NETTOYAGE V13</p>
+  <p class="subtitle">PHASE 5 — NETTOYAGE V14</p>
 
   <div class="hud">
     <div class="hud-score">🧹 <span id="score-nettoyage">0</span> pts</div>
@@ -393,7 +457,7 @@
 <!-- ══ PHASE 6 — RÉSULTAT ══ -->
 <div id="screen-resultat" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 6 — RÉSULTAT V13</p>
+  <p class="subtitle">PHASE 6 — RÉSULTAT V14</p>
 
   <!-- Balayettes gagnées -->
   <div id="balayettes-display" style="font-size:3.5em;text-align:center;margin:18px 0 6px;letter-spacing:8px;">🧹🧹🧹</div>
@@ -427,6 +491,140 @@
   <button class="btn-yellow" id="btn-rejouer-final">🔄 REJOUER</button>
   <button class="btn-green" style="display:block;" id="btn-niveau-suivant">▶ NIVEAU SUIVANT</button>
 </div>
+
+<!-- ══ PANNEAU DEBUG ══ -->
+<div id="debug-panel">
+  <h2>⚙️ PANNEAU DEBUG</h2>
+  <p class="dbg-subtitle">Appui long sur 🚽 pour ouvrir · Appui long ici pour fermer</p>
+
+  <!-- Paramètres de tir -->
+  <div class="dbg-section">
+    <div class="dbg-section-title">🎯 PARAMÈTRES DE TIR</div>
+
+    <div class="dbg-row">
+      <span class="dbg-label">Contrôle (1=dur)</span>
+      <input type="range" class="dbg-slider" id="dbg-controle" min="1" max="10" value="5">
+      <span class="dbg-val" id="dbg-controle-val">5</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Diamètre visée</span>
+      <input type="range" class="dbg-slider" id="dbg-diametre" min="1" max="10" value="5">
+      <span class="dbg-val" id="dbg-diametre-val">5</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Temps de tir (s)</span>
+      <input type="range" class="dbg-slider" id="dbg-tir" min="1" max="10" value="5">
+      <span class="dbg-val" id="dbg-tir-val">5</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Temps nettoyage</span>
+      <input type="range" class="dbg-slider" id="dbg-nettoyage" min="1" max="10" value="5">
+      <span class="dbg-val" id="dbg-nettoyage-val">5</span>
+    </div>
+  </div>
+
+  <!-- Dérive -->
+  <div class="dbg-section">
+    <div class="dbg-section-title">🌀 DÉRIVE DE LA VISÉE</div>
+    <div class="dbg-row">
+      <span class="dbg-label">Vitesse dérive</span>
+      <input type="range" class="dbg-slider" id="dbg-drift-speed" min="1" max="20" value="8">
+      <span class="dbg-val" id="dbg-drift-speed-val">8</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Fréq. changement</span>
+      <input type="range" class="dbg-slider" id="dbg-drift-freq" min="10" max="120" value="60">
+      <span class="dbg-val" id="dbg-drift-freq-val">60</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Force joystick</span>
+      <input type="range" class="dbg-slider" id="dbg-joy-force" min="1" max="10" value="3">
+      <span class="dbg-val" id="dbg-joy-force-val">3</span>
+    </div>
+  </div>
+
+  <!-- Scoring -->
+  <div class="dbg-section">
+    <div class="dbg-section-title">⭐ COEFFICIENTS SCORE</div>
+    <div class="dbg-row">
+      <span class="dbg-label">Trou (pts/touch)</span>
+      <input type="range" class="dbg-slider" id="dbg-coef-trou" min="1" max="20" value="5">
+      <span class="dbg-val" id="dbg-coef-trou-val">5</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Porcelaine</span>
+      <input type="range" class="dbg-slider" id="dbg-coef-porc" min="0" max="5" value="1">
+      <span class="dbg-val" id="dbg-coef-porc-val">1</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Hors cible (pénal)</span>
+      <input type="range" class="dbg-slider" id="dbg-coef-hors" min="0" max="10" value="2">
+      <span class="dbg-val" id="dbg-coef-hors-val">2</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Seuil 1 balayette</span>
+      <input type="range" class="dbg-slider" id="dbg-seuil1" min="10" max="500" value="120">
+      <span class="dbg-val" id="dbg-seuil1-val">120</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Seuil 2 balayettes</span>
+      <input type="range" class="dbg-slider" id="dbg-seuil2" min="50" max="800" value="250">
+      <span class="dbg-val" id="dbg-seuil2-val">250</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Seuil 3 balayettes</span>
+      <input type="range" class="dbg-slider" id="dbg-seuil3" min="100" max="1200" value="400">
+      <span class="dbg-val" id="dbg-seuil3-val">400</span>
+    </div>
+  </div>
+
+  <!-- Mouches -->
+  <div class="dbg-section">
+    <div class="dbg-section-title">🪰 MOUCHES</div>
+    <div class="dbg-row">
+      <span class="dbg-label">Vitesse mouches</span>
+      <input type="range" class="dbg-slider" id="dbg-mouche-speed" min="1" max="30" value="18">
+      <span class="dbg-val" id="dbg-mouche-speed-val">18</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Taille mouches</span>
+      <input type="range" class="dbg-slider" id="dbg-mouche-size" min="2" max="15" value="6">
+      <span class="dbg-val" id="dbg-mouche-size-val">6</span>
+    </div>
+    <div class="dbg-row">
+      <span class="dbg-label">Bonus mouche pts</span>
+      <input type="range" class="dbg-slider" id="dbg-mouche-bonus" min="50" max="2000" value="500">
+      <span class="dbg-val" id="dbg-mouche-bonus-val">500</span>
+    </div>
+  </div>
+
+  <!-- Options -->
+  <div class="dbg-section">
+    <div class="dbg-section-title">🔧 OPTIONS</div>
+    <div class="dbg-toggle">
+      <input type="checkbox" id="dbg-skip-anim" checked>
+      <label for="dbg-skip-anim">Passer l'animation automatiquement</label>
+    </div>
+    <div class="dbg-toggle">
+      <input type="checkbox" id="dbg-force-params">
+      <label for="dbg-force-params">Forcer les paramètres ci-dessus (ignore phase 3)</label>
+    </div>
+    <div class="dbg-toggle">
+      <input type="checkbox" id="dbg-unlock-all">
+      <label for="dbg-unlock-all">Débloquer tous les niveaux</label>
+    </div>
+  </div>
+
+  <!-- Info live -->
+  <div class="dbg-section" id="dbg-live-info" style="font-size:0.65em;color:#4ade80;font-family:'Courier New',monospace;line-height:1.8;">
+    Lance une partie pour voir les stats en direct ici.
+  </div>
+
+  <button class="dbg-btn" id="dbg-apply">✅ APPLIQUER & FERMER</button>
+  <button class="dbg-btn grey" id="dbg-reset">↩ RESET VALEURS PAR DÉFAUT</button>
+</div>
+
+<div id="debug-hint">appui long sur 🚽</div>
 
 <script>
 // ══════════════════════════════════════════════════════════
@@ -516,6 +714,138 @@ const LEVELS = STAGES.map((s,i) => ({
 }));
 
 let selectedLevel = null;
+
+// ══════════════════════════════════════════════════════════
+// PANNEAU DEBUG
+// ══════════════════════════════════════════════════════════
+
+// Valeurs debug (overrident le jeu si dbg-force-params est coché)
+const DBG = {
+  controle: 5, diametre: 5, tir: 5, nettoyage: 5,
+  driftSpeed: 8, driftFreq: 60, joyForce: 3,
+  coefTrou: 5, coefPorc: 1, coefHors: 2,
+  seuil1: 120, seuil2: 250, seuil3: 400,
+  moucheSpeed: 18, moucheSize: 6, moucheBonus: 500,
+  skipAnim: true, forceParams: false, unlockAll: false,
+};
+
+const DBG_DEFAULTS = {...DBG};
+
+// Liaison sliders ↔ valeurs
+const DBG_SLIDERS = [
+  ['dbg-controle',     'controle'],
+  ['dbg-diametre',     'diametre'],
+  ['dbg-tir',          'tir'],
+  ['dbg-nettoyage',    'nettoyage'],
+  ['dbg-drift-speed',  'driftSpeed'],
+  ['dbg-drift-freq',   'driftFreq'],
+  ['dbg-joy-force',    'joyForce'],
+  ['dbg-coef-trou',    'coefTrou'],
+  ['dbg-coef-porc',    'coefPorc'],
+  ['dbg-coef-hors',    'coefHors'],
+  ['dbg-seuil1',       'seuil1'],
+  ['dbg-seuil2',       'seuil2'],
+  ['dbg-seuil3',       'seuil3'],
+  ['dbg-mouche-speed', 'moucheSpeed'],
+  ['dbg-mouche-size',  'moucheSize'],
+  ['dbg-mouche-bonus', 'moucheBonus'],
+];
+
+function initDebugPanel() {
+  // Init sliders
+  DBG_SLIDERS.forEach(([id, key]) => {
+    const el  = document.getElementById(id);
+    const val = document.getElementById(id+'-val');
+    if(!el) return;
+    el.value = DBG[key];
+    val.textContent = DBG[key];
+    el.addEventListener('input', () => {
+      DBG[key] = parseFloat(el.value);
+      val.textContent = el.value;
+    });
+  });
+
+  // Checkboxes
+  document.getElementById('dbg-skip-anim').addEventListener('change', e => {
+    DBG.skipAnim = e.target.checked;
+  });
+  document.getElementById('dbg-force-params').addEventListener('change', e => {
+    DBG.forceParams = e.target.checked;
+  });
+  document.getElementById('dbg-unlock-all').addEventListener('change', e => {
+    DBG.unlockAll = e.target.checked;
+    if(DBG.unlockAll) {
+      LEVELS.forEach(l => { l.locked=false; if(l.bala===-1) l.bala=0; });
+      document.getElementById('map-inner').innerHTML='<svg id="map-path" preserveAspectRatio="none"></svg>';
+      buildMap();
+    }
+  });
+
+  // Bouton reset
+  document.getElementById('dbg-reset').addEventListener('click', () => {
+    Object.assign(DBG, DBG_DEFAULTS);
+    DBG_SLIDERS.forEach(([id, key]) => {
+      const el  = document.getElementById(id);
+      const val = document.getElementById(id+'-val');
+      if(!el) return;
+      el.value = DBG[key];
+      val.textContent = DBG[key];
+    });
+  });
+
+  // Bouton appliquer
+  document.getElementById('dbg-apply').addEventListener('click', closeDebug);
+
+  // Appui long sur H1 (le 🚽 LATRINE) pour ouvrir
+  let pressTimer = null;
+  document.querySelectorAll('h1').forEach(h => {
+    h.addEventListener('touchstart', () => {
+      pressTimer = setTimeout(openDebug, 1200);
+    });
+    h.addEventListener('touchend', () => clearTimeout(pressTimer));
+    h.addEventListener('mousedown', () => {
+      pressTimer = setTimeout(openDebug, 1200);
+    });
+    h.addEventListener('mouseup', () => clearTimeout(pressTimer));
+  });
+
+  // Appui long sur le panneau debug pour fermer
+  let closeTimer = null;
+  document.getElementById('debug-panel').addEventListener('touchstart', e => {
+    if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
+    closeTimer = setTimeout(closeDebug, 1200);
+  });
+  document.getElementById('debug-panel').addEventListener('touchend', () => clearTimeout(closeTimer));
+}
+
+function openDebug() {
+  document.getElementById('debug-panel').classList.add('show');
+}
+function closeDebug() {
+  document.getElementById('debug-panel').classList.remove('show');
+  // Appliquer seuils
+  if(typeof SEUIL_X !== 'undefined') {
+    window.SEUIL_X_DBG = DBG.seuil1;
+    window.SEUIL_Y_DBG = DBG.seuil2;
+    window.SEUIL_Z_DBG = DBG.seuil3;
+  }
+}
+
+// Mise à jour info live pendant le tir
+function updateDebugLive() {
+  if(!document.getElementById('debug-panel').classList.contains('show')) return;
+  const el = document.getElementById('dbg-live-info');
+  if(!el) return;
+  el.innerHTML =
+    'Score actuel : <b>'+scoreTotal+'</b><br>' +
+    'Trou : <b>'+pixTrou+'</b> touches<br>' +
+    'Porcelaine : <b>'+pixPorc+'</b> touches<br>' +
+    'Hors : <b>'+pixHors+'</b> touches<br>' +
+    'Visée X : <b>'+Math.round(viseX)+'</b> Y : <b>'+Math.round(viseY)+'</b><br>' +
+    'DriftDX : <b>'+driftDX.toFixed(2)+'</b> DY : <b>'+driftDY.toFixed(2)+'</b>';
+}
+
+initDebugPanel();
 
 function buildMap() {
   const inner = document.getElementById('map-inner');
@@ -890,7 +1220,7 @@ let traceCanvas, traceCtx;
 
 // Mouches (size calculée dans setupCanvas en px réels)
 const MOUCHES = [
-  { x:0, y:0, vx:0, vy:0, size:0, bonus:500, multi:false },
+  { x:0, y:0, vx:0, vy:0, size:0, get bonus(){ return DBG.moucheBonus; }, multi:false },
   { x:0, y:0, vx:0, vy:0, size:0, bonus:0,   multi:true  },
   { x:0, y:0, vx:0, vy:0, size:0, bonus:300, multi:false },
 ];
@@ -950,8 +1280,9 @@ function setupCanvas() {
   viseSpeed = CW*(0.008 + (10-ctrl)*0.004);
 
   // Dérive : mauvais contrôle (1) = dérive forte, bon contrôle (10) = dérive faible
-  driftSpeed = CW*(0.001 + (10-ctrl)*0.0025);
-  driftInterval = 30 + ctrl*8; // bon contrôle = direction stable plus longtemps
+  // Si debug actif, utilise les valeurs du panneau
+  driftSpeed = CW*(0.001 * DBG.driftSpeed);
+  driftInterval = DBG.driftFreq;
   driftTimer=0;
   // Direction initiale aléatoire
   const a0=Math.random()*Math.PI*2;
@@ -961,11 +1292,11 @@ function setupCanvas() {
 
   // Init mouches — taille et vitesse proportionnelles au canvas réel
   MOUCHES.forEach(m => {
-    m.size = CW * 0.06;  // ~6% de la largeur canvas = bien visible
+    m.size = CW * (DBG.moucheSize/100);
     m.x = CW*(0.3 + Math.random()*0.4);
     m.y = CH*(0.4 + Math.random()*0.25);
     const angle = Math.random()*Math.PI*2;
-    const spd = CW*0.018;
+    const spd = CW*(DBG.moucheSpeed/1000);
     m.vx = Math.cos(angle)*spd;
     m.vy = Math.sin(angle)*spd;
     m.hit = false;
@@ -1026,8 +1357,8 @@ function gameTick() {
   // Le joueur pousse dans la direction du glissement → la visée suit ce sens
   // La vitesse joueur est 3x la dérive pour qu'on puisse toujours reprendre le contrôle
   if(joystickActive) {
-    viseX += joyDX * viseSpeed * 3;
-    viseY += joyDY * viseSpeed * 3;
+    viseX += joyDX * viseSpeed * DBG.joyForce;
+    viseY += joyDY * viseSpeed * DBG.joyForce;
   }
 
   // Rebond sur les bords (la visée ne sort pas du canvas)
@@ -1074,7 +1405,11 @@ function gameTick() {
   else                   { traceCtx.fillStyle='rgba(100,60,20,0.40)';  pixHors++; }
   traceCtx.fill();
 
-  scoreTotal=Math.max(0, pixTrou*5 + pixPorc*1 - pixHors*2);
+  const _ct = DBG.coefTrou;
+  const _cp = DBG.coefPorc;
+  const _ch = DBG.coefHors;
+  scoreTotal=Math.max(0, pixTrou*_ct + pixPorc*_cp - pixHors*_ch);
+  updateDebugLive();
   document.getElementById('score-display').textContent=scoreTotal;
 
   drawToilet();
@@ -1476,10 +1811,16 @@ document.getElementById('btn-rejouer').addEventListener('click',()=>location.rel
 // PHASE 6 — RÉSULTAT
 // ══════════════════════════════════════════════════════════
 // Seuils balayettes (sur score max théorique ~600pts)
-const SEUIL_X = 120; // 1 balayette
-const SEUIL_Y = 250; // 2 balayettes
-const SEUIL_Z = 400; // 3 balayettes
+const SEUIL_X = 120;
+const SEUIL_Y = 250;
+const SEUIL_Z = 400;
 const SCORE_MAX = 600;
+// Les seuils actifs tiennent compte du debug
+function getSeuil(n) {
+  if(n===1) return window.SEUIL_X_DBG||SEUIL_X;
+  if(n===2) return window.SEUIL_Y_DBG||SEUIL_Y;
+  return window.SEUIL_Z_DBG||SEUIL_Z;
+}
 
 function startPhase6() {
   document.getElementById('screen-nettoyage').classList.remove('active');
@@ -1513,10 +1854,10 @@ function startPhase6() {
   // Balayettes
   let balayettes = 0;
   let label = '';
-  if (total >= SEUIL_Z)      { balayettes=3; label='SCORE PARFAIT ! 3 BALAYETTES'; }
-  else if (total >= SEUIL_Y) { balayettes=2; label='BIEN JOUÉ ! 2 BALAYETTES'; }
-  else if (total >= SEUIL_X) { balayettes=1; label='PAS MAL ! 1 BALAYETTE'; }
-  else                        { balayettes=0; label='ESSAIE ENCORE...'; }
+  if (total >= getSeuil(3))      { balayettes=3; label='SCORE PARFAIT ! 3 BALAYETTES'; }
+  else if (total >= getSeuil(2)) { balayettes=2; label='BIEN JOUÉ ! 2 BALAYETTES'; }
+  else if (total >= getSeuil(1)) { balayettes=1; label='PAS MAL ! 1 BALAYETTE'; }
+  else                           { balayettes=0; label='ESSAIE ENCORE...'; }
 
   // Animation apparition balayettes
   const icons = ['⬜','⬜','⬜'];
