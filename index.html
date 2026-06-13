@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>LATRINE – Préparation</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1a2e;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 1.4em;
+    letter-spacing: 4px;
+    color: #f5c518;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 0.75em;
+    color: #888;
+    margin-bottom: 28px;
+    text-align: center;
+    letter-spacing: 2px;
+  }
+
+  /* Skin affiché en haut */
+  .skin-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #16213e;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 10px 18px;
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .skin-icon { font-size: 2em; }
+  .skin-info { flex: 1; }
+  .skin-name { font-size: 0.9em; color: #f5c518; font-weight: bold; }
+  .skin-bonus { font-size: 0.75em; color: #4ade80; margin-top: 2px; }
+
+  /* Bloc curseur */
+  .slider-block {
+    width: 100%;
+    max-width: 360px;
+    margin-bottom: 18px;
+  }
+
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .slider-title {
+    font-size: 0.75em;
+    letter-spacing: 2px;
+    color: #aaa;
+  }
+
+  .slider-value {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #f5c518;
+    min-width: 40px;
+    text-align: right;
+  }
+
+  .track-container {
+    position: relative;
+    height: 36px;
+    background: #0f3460;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #333;
+  }
+
+  /* Gradient MIN(rouge) → MAX(vert) */
+  .track-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    border-radius: 18px;
+    transition: width 0.05s linear;
+  }
+
+  .track-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 28px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(245,197,24,0.8);
+    transition: left 0.05s linear;
+  }
+
+  .minmax {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65em;
+    color: #555;
+    margin-top: 3px;
+    padding: 0 4px;
+  }
+
+  /* Décompte */
+  .timer-zone {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #e63946;
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin-bottom: 18px;
+  }
+
+  .timer-label {
+    font-size: 0.75em;
+    letter-spacing: 2px;
+  }
+
+  .timer-count {
+    font-size: 1.8em;
+    font-weight: bold;
+  }
+
+  /* Bouton STOP */
+  #btn-stop {
+    width: 100%;
+    max-width: 360px;
+    padding: 16px;
+    font-size: 1.2em;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 4px;
+    font-weight: bold;
+    background: #f5c518;
+    color: #1a1a2e;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    margin-bottom: 12px;
+  }
+  #btn-stop:active { transform: scale(0.97); }
+  #btn-stop:disabled {
+    background: #444;
+    color: #888;
+    cursor: default;
+  }
+
+  /* Bouton SUIVANT (caché au départ) */
+  #btn-next {
+    display: none;
+    width: 100%;
+    max-width: 360px;
+    padding: 14px;
+    font-size: 1em;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 3px;
+    background: #4ade80;
+    color: #1a1a2e;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.1s;
+  }
+  #btn-next:active { transform: scale(0.97); }
+
+  /* Popup récap */
+  #popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  #popup.show { display: flex; }
+
+  .popup-box {
+    background: #16213e;
+    border: 2px solid #f5c518;
+    border-radius: 16px;
+    padding: 28px 24px;
+    width: 90%;
+    max-width: 340px;
+    text-align: center;
+  }
+
+  .popup-title {
+    font-size: 1em;
+    letter-spacing: 3px;
+    color: #f5c518;
+    margin-bottom: 20px;
+  }
+
+  .recap-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #333;
+    font-size: 0.85em;
+  }
+  .recap-row:last-of-type { border-bottom: none; }
+  .recap-label { color: #aaa; }
+  .recap-val { color: #4ade80; font-weight: bold; }
+
+  .popup-btn {
+    margin-top: 22px;
+    padding: 12px 32px;
+    background: #f5c518;
+    color: #1a1a2e;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>🚽 LATRINE</h1>
+<p class="subtitle">PHASE 3 — PRÉPARATION</p>
+
+<!-- Skin -->
+<div class="skin-bar">
+  <div class="skin-icon">🌽</div>
+  <div class="skin-info">
+    <div class="skin-name">MR. MAÏS</div>
+    <div class="skin-bonus">+1 CONTRÔLE &nbsp;·&nbsp; -1 NETTOYAGE</div>
+  </div>
+</div>
+
+<!-- Les 4 curseurs -->
+<div class="slider-block">
+  <div class="slider-label">
+    <span class="slider-title">CONTRÔLE DU TIR</span>
+    <span class="slider-value" id="val-controle">–</span>
+  </div>
+  <div class="track-container">
+    <div class="track-fill" id="fill-controle" style="background: linear-gradient(90deg,#e63946,#4ade80);"></div>
+    <div class="track-thumb" id="thumb-controle"></div>
+  </div>
+  <div class="minmax"><span>MIN</span><span>MAX</span></div>
+</div>
+
+<div class="slider-block">
+  <div class="slider-label">
+    <span class="slider-title">DIAMÈTRE</span>
+    <span class="slider-value" id="val-diametre">–</span>
+  </div>
+  <div class="track-container">
+    <div class="track-fill" id="fill-diametre" style="background: linear-gradient(90deg,#e63946,#4ade80);"></div>
+    <div class="track-thumb" id="thumb-diametre"></div>
+  </div>
+  <div class="minmax"><span>MIN</span><span>MAX</span></div>
+</div>
+
+<div class="slider-block">
+  <div class="slider-label">
+    <span class="slider-title">TEMPS DE TIR</span>
+    <span class="slider-value" id="val-tir">–</span>
+  </div>
+  <div class="track-container">
+    <!-- Inversé : MAX à gauche, MIN à droite -->
+    <div class="track-fill" id="fill-tir" style="background: linear-gradient(90deg,#4ade80,#e63946);"></div>
+    <div class="track-thumb" id="thumb-tir"></div>
+  </div>
+  <div class="minmax"><span>MAX</span><span>MIN</span></div>
+</div>
+
+<div class="slider-block">
+  <div class="slider-label">
+    <span class="slider-title">TEMPS DE NETTOYAGE</span>
+    <span class="slider-value" id="val-nettoyage">–</span>
+  </div>
+  <div class="track-container">
+    <div class="track-fill" id="fill-nettoyage" style="background: linear-gradient(90deg,#e63946,#4ade80);"></div>
+    <div class="track-thumb" id="thumb-nettoyage"></div>
+  </div>
+  <div class="minmax"><span>MIN</span><span>MAX</span></div>
+</div>
+
+<!-- Décompte -->
+<div class="timer-zone">
+  <span class="timer-label">DÉCOMPTE</span>
+  <span class="timer-count" id="timer-display">10</span>
+</div>
+
+<!-- Boutons -->
+<button id="btn-stop">⏹ STOP</button>
+<button id="btn-next">▶ SUIVANT</button>
+
+<!-- Popup récap -->
+<div id="popup">
+  <div class="popup-box">
+    <div class="popup-title">📋 PARAMÈTRES RETENUS</div>
+    <div class="recap-row">
+      <span class="recap-label">Contrôle</span>
+      <span class="recap-val" id="r-controle"></span>
+    </div>
+    <div class="recap-row">
+      <span class="recap-label">Diamètre</span>
+      <span class="recap-val" id="r-diametre"></span>
+    </div>
+    <div class="recap-row">
+      <span class="recap-label">Temps de tir</span>
+      <span class="recap-val" id="r-tir"></span>
+    </div>
+    <div class="recap-row">
+      <span class="recap-label">Nettoyage</span>
+      <span class="recap-val" id="r-nettoyage"></span>
+    </div>
+    <button class="popup-btn" onclick="closePopup()">JOUER →</button>
+  </div>
+</div>
+
+<script>
+// ── Configuration ──────────────────────────────────────────
+const DUREE_TOTALE = 10; // secondes avant que tout devienne aléatoire
+
+// Chaque curseur : id, vitesse de déplacement (px/frame), direction de départ
+const sliders = [
+  { id: 'controle', speed: 1.2, dir: 1, pos: 0 },
+  { id: 'diametre', speed: 0.9, dir: -1, pos: 50 },
+  { id: 'tir',      speed: 1.5, dir: 1,  pos: 20 },
+  { id: 'nettoyage',speed: 0.7, dir: 1,  pos: 70 },
+];
+
+// Valeur lisible : 1–10 en fonction de la position (0–100)
+function posToVal(pos) {
+  return Math.max(1, Math.round(pos / 10));
+}
+
+// Label texte court selon le curseur et sa valeur
+function valLabel(id, v) {
+  if (id === 'controle')   return v <= 3 ? 'DIFFICILE' : v <= 7 ? 'MOYEN' : 'FACILE';
+  if (id === 'diametre')   return v <= 3 ? 'PETIT' : v <= 7 ? 'MOYEN' : 'LARGE';
+  if (id === 'tir')        return v <= 3 ? 'COURT' : v <= 7 ? 'MOYEN' : 'LONG';
+  if (id === 'nettoyage')  return v <= 3 ? 'RAPIDE' : v <= 7 ? 'MOYEN' : 'LENT';
+}
+
+// ── État ───────────────────────────────────────────────────
+let stopped = false;
+let timeLeft = DUREE_TOTALE;
+let rafId = null;
+let timerInterval = null;
+let frozen = {}; // valeurs figées au STOP
+
+// ── Animation des curseurs ─────────────────────────────────
+let lastTime = null;
+
+function animateSliders(ts) {
+  if (stopped) return;
+  if (!lastTime) lastTime = ts;
+  const dt = (ts - lastTime) / 16.67; // normalisé à 60fps
+  lastTime = ts;
+
+  sliders.forEach(s => {
+    s.pos += s.speed * s.dir * dt;
+    if (s.pos >= 100) { s.pos = 100; s.dir = -1; }
+    if (s.pos <= 0)   { s.pos = 0;   s.dir = 1;  }
+    renderSlider(s);
+  });
+
+  rafId = requestAnimationFrame(animateSliders);
+}
+
+function renderSlider(s) {
+  const thumb = document.getElementById('thumb-' + s.id);
+  const fill  = document.getElementById('fill-'  + s.id);
+  const valEl = document.getElementById('val-'   + s.id);
+  const v = posToVal(s.pos);
+
+  thumb.style.left = s.pos + '%';
+  fill.style.width = s.pos + '%';
+  valEl.textContent = valLabel(s.id, v);
+}
+
+// ── Décompte ───────────────────────────────────────────────
+function startTimer() {
+  document.getElementById('timer-display').textContent = timeLeft;
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timer-display').textContent = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      autoStop(); // temps écoulé → on fige tout aléatoirement
+    }
+  }, 1000);
+}
+
+function autoStop() {
+  // Si le joueur n'a pas appuyé STOP, on fige les positions actuelles
+  doStop();
+}
+
+// ── STOP ───────────────────────────────────────────────────
+function doStop() {
+  if (stopped) return;
+  stopped = true;
+  cancelAnimationFrame(rafId);
+  clearInterval(timerInterval);
+
+  // Sauvegarder les valeurs
+  sliders.forEach(s => {
+    frozen[s.id] = { pos: s.pos, val: posToVal(s.pos) };
+  });
+
+  document.getElementById('btn-stop').disabled = true;
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+document.getElementById('btn-stop').addEventListener('click', doStop);
+
+// ── SUIVANT → popup récap ──────────────────────────────────
+document.getElementById('btn-next').addEventListener('click', () => {
+  document.getElementById('r-controle').textContent  = valLabel('controle',  frozen.controle.val)  + ' (' + frozen.controle.val  + '/10)';
+  document.getElementById('r-diametre').textContent  = valLabel('diametre',  frozen.diametre.val)  + ' (' + frozen.diametre.val  + '/10)';
+  document.getElementById('r-tir').textContent       = valLabel('tir',       frozen.tir.val)       + ' (' + frozen.tir.val       + '/10)';
+  document.getElementById('r-nettoyage').textContent = valLabel('nettoyage', frozen.nettoyage.val) + ' (' + frozen.nettoyage.val + '/10)';
+  document.getElementById('popup').classList.add('show');
+});
+
+function closePopup() {
+  document.getElementById('popup').classList.remove('show');
+  // Ici on passera à la phase 4 plus tard
+  alert('Phase 4 (le tir) — à venir ! 🚽');
+}
+
+// ── Démarrage ──────────────────────────────────────────────
+requestAnimationFrame(animateSliders);
+startTimer();
+</script>
+</body>
+</html>
