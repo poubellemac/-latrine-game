@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>LATRINE – Préparation</title>
+<title>LATRINE</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -11,449 +11,572 @@
     background: #1a1a2e;
     color: #fff;
     font-family: 'Courier New', monospace;
-    min-height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-  }
-
-  h1 {
-    font-size: 1.4em;
-    letter-spacing: 4px;
-    color: #f5c518;
-    margin-bottom: 6px;
-    text-align: center;
-  }
-
-  .subtitle {
-    font-size: 0.75em;
-    color: #888;
-    margin-bottom: 28px;
-    text-align: center;
-    letter-spacing: 2px;
-  }
-
-  /* Skin affiché en haut */
-  .skin-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #16213e;
-    border: 1px solid #333;
-    border-radius: 10px;
-    padding: 10px 18px;
-    margin-bottom: 24px;
-    width: 100%;
-    max-width: 360px;
-  }
-  .skin-icon { font-size: 2em; }
-  .skin-info { flex: 1; }
-  .skin-name { font-size: 0.9em; color: #f5c518; font-weight: bold; }
-  .skin-bonus { font-size: 0.75em; color: #4ade80; margin-top: 2px; }
-
-  /* Bloc curseur */
-  .slider-block {
-    width: 100%;
-    max-width: 360px;
-    margin-bottom: 18px;
-  }
-
-  .slider-label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-
-  .slider-title {
-    font-size: 0.75em;
-    letter-spacing: 2px;
-    color: #aaa;
-  }
-
-  .slider-value {
-    font-size: 0.9em;
-    font-weight: bold;
-    color: #f5c518;
-    min-width: 40px;
-    text-align: right;
-  }
-
-  .track-container {
-    position: relative;
-    height: 36px;
-    background: #0f3460;
-    border-radius: 18px;
+    padding: 12px;
     overflow: hidden;
-    border: 1px solid #333;
   }
 
-  /* Gradient MIN(rouge) → MAX(vert) */
-  .track-fill {
-    position: absolute;
-    top: 0; left: 0; bottom: 0;
-    border-radius: 18px;
-    transition: width 0.05s linear;
-  }
+  .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 380px; }
+  .screen.active { display: flex; }
 
-  .track-thumb {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 28px;
-    height: 28px;
-    background: #fff;
-    border-radius: 50%;
-    box-shadow: 0 0 8px rgba(245,197,24,0.8);
-    transition: left 0.05s linear;
-  }
+  h1 { font-size: 1.3em; letter-spacing: 4px; color: #f5c518; margin-bottom: 3px; text-align: center; }
+  .subtitle { font-size: 0.70em; color: #888; margin-bottom: 18px; text-align: center; letter-spacing: 2px; }
 
-  .minmax {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.65em;
-    color: #555;
-    margin-top: 3px;
-    padding: 0 4px;
+  .skin-bar {
+    display:flex; align-items:center; gap:12px;
+    background:#16213e; border:1px solid #333; border-radius:10px;
+    padding:8px 14px; margin-bottom:16px; width:100%;
   }
+  .skin-icon { font-size:1.8em; }
+  .skin-name { font-size:0.88em; color:#f5c518; font-weight:bold; }
+  .skin-bonus { font-size:0.70em; color:#4ade80; margin-top:2px; }
 
-  /* Décompte */
+  .slider-block { width:100%; margin-bottom:12px; }
+  .slider-label { display:flex; justify-content:space-between; margin-bottom:4px; }
+  .slider-title { font-size:0.70em; letter-spacing:2px; color:#aaa; }
+  .slider-value { font-size:0.82em; font-weight:bold; color:#f5c518; }
+  .track-container { position:relative; height:32px; background:#0f3460; border-radius:16px; overflow:hidden; border:1px solid #333; }
+  .track-fill { position:absolute; top:0; left:0; bottom:0; border-radius:16px; }
+  .track-thumb { position:absolute; top:50%; transform:translate(-50%,-50%); width:24px; height:24px; background:#fff; border-radius:50%; box-shadow:0 0 8px rgba(245,197,24,0.8); }
+  .minmax { display:flex; justify-content:space-between; font-size:0.60em; color:#555; margin-top:2px; padding:0 4px; }
+
   .timer-zone {
-    width: 100%;
-    max-width: 360px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #e63946;
-    border-radius: 10px;
-    padding: 12px 20px;
-    margin-bottom: 18px;
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:#e63946; border-radius:10px; padding:8px 16px; margin-bottom:14px;
+  }
+  .timer-label { font-size:0.70em; letter-spacing:2px; }
+  .timer-count { font-size:1.6em; font-weight:bold; }
+
+  .btn-yellow {
+    width:100%; padding:14px; font-size:1.05em; font-family:'Courier New',monospace;
+    letter-spacing:4px; font-weight:bold; background:#f5c518; color:#1a1a2e;
+    border:none; border-radius:10px; cursor:pointer; margin-bottom:10px;
+  }
+  .btn-yellow:disabled { background:#444; color:#888; }
+
+  .btn-green {
+    display:none; width:100%; padding:12px; font-size:1em; font-family:'Courier New',monospace;
+    letter-spacing:3px; background:#4ade80; color:#1a1a2e; border:none; border-radius:10px;
+    cursor:pointer; font-weight:bold; margin-bottom:10px;
   }
 
-  .timer-label {
-    font-size: 0.75em;
-    letter-spacing: 2px;
+  .popup-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85);
+    align-items:center; justify-content:center; z-index:20;
   }
-
-  .timer-count {
-    font-size: 1.8em;
-    font-weight: bold;
-  }
-
-  /* Bouton STOP */
-  #btn-stop {
-    width: 100%;
-    max-width: 360px;
-    padding: 16px;
-    font-size: 1.2em;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 4px;
-    font-weight: bold;
-    background: #f5c518;
-    color: #1a1a2e;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform 0.1s, background 0.2s;
-    margin-bottom: 12px;
-  }
-  #btn-stop:active { transform: scale(0.97); }
-  #btn-stop:disabled {
-    background: #444;
-    color: #888;
-    cursor: default;
-  }
-
-  /* Bouton SUIVANT (caché au départ) */
-  #btn-next {
-    display: none;
-    width: 100%;
-    max-width: 360px;
-    padding: 14px;
-    font-size: 1em;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 3px;
-    background: #4ade80;
-    color: #1a1a2e;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: transform 0.1s;
-  }
-  #btn-next:active { transform: scale(0.97); }
-
-  /* Popup récap */
-  #popup {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-  }
-  #popup.show { display: flex; }
-
+  .popup-overlay.show { display:flex; }
   .popup-box {
-    background: #16213e;
-    border: 2px solid #f5c518;
-    border-radius: 16px;
-    padding: 28px 24px;
-    width: 90%;
-    max-width: 340px;
-    text-align: center;
+    background:#16213e; border:2px solid #f5c518; border-radius:16px;
+    padding:24px 20px; width:90%; max-width:340px; text-align:center;
+  }
+  .popup-title { font-size:0.92em; letter-spacing:3px; color:#f5c518; margin-bottom:16px; }
+  .recap-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #333; font-size:0.80em; }
+  .recap-row:last-of-type { border-bottom:none; }
+  .recap-label { color:#aaa; }
+  .recap-val { color:#4ade80; font-weight:bold; }
+  .popup-btn { margin-top:18px; padding:11px 26px; background:#f5c518; color:#1a1a2e; border:none; border-radius:8px; font-size:0.92em; font-family:'Courier New',monospace; font-weight:bold; letter-spacing:2px; cursor:pointer; }
+
+  /* ── Phase 4 ── */
+  #screen-tir { justify-content:flex-start; }
+
+  .hud { display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:8px; }
+  .hud-score { font-size:1.2em; color:#f5c518; font-weight:bold; }
+  .hud-params { font-size:0.62em; color:#888; text-align:right; line-height:1.6; }
+
+  /* Canvas toilettes — carré, prend la largeur dispo */
+  #toilet-wrap {
+    position:relative;
+    width:100%;
+    max-width:340px;
+    aspect-ratio:3/4;
+    margin:0 auto 10px;
+  }
+  #cvs { width:100%; height:100%; border-radius:12px; display:block; }
+
+  #countdown-overlay {
+    display:none; position:absolute; inset:0;
+    background:rgba(0,0,0,0.72); border-radius:12px;
+    align-items:center; justify-content:center;
+    font-size:4em; font-weight:bold; color:#f5c518; z-index:5;
+  }
+  #countdown-overlay.show { display:flex; }
+
+  .tir-timer {
+    width:100%; background:#e63946; border-radius:8px;
+    padding:7px 14px; display:flex; justify-content:space-between;
+    font-size:0.78em; margin-bottom:10px;
   }
 
-  .popup-title {
-    font-size: 1em;
-    letter-spacing: 3px;
-    color: #f5c518;
-    margin-bottom: 20px;
+  /* Zone de contrôle tactile */
+  #joystick-zone {
+    width:100%; max-width:340px;
+    height:80px;
+    background:#16213e;
+    border:2px solid #333;
+    border-radius:14px;
+    position:relative;
+    touch-action:none;
+    cursor:crosshair;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+    -webkit-user-select:none;
   }
-
-  .recap-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #333;
-    font-size: 0.85em;
+  #joystick-zone .hint {
+    font-size:0.68em; color:#555; letter-spacing:1px; pointer-events:none;
   }
-  .recap-row:last-of-type { border-bottom: none; }
-  .recap-label { color: #aaa; }
-  .recap-val { color: #4ade80; font-weight: bold; }
-
-  .popup-btn {
-    margin-top: 22px;
-    padding: 12px 32px;
-    background: #f5c518;
-    color: #1a1a2e;
-    border: none;
-    border-radius: 8px;
-    font-size: 1em;
-    font-family: 'Courier New', monospace;
-    font-weight: bold;
-    letter-spacing: 2px;
-    cursor: pointer;
+  /* Point de contact affiché */
+  #joystick-dot {
+    display:none;
+    position:absolute;
+    width:36px; height:36px;
+    border-radius:50%;
+    background:rgba(245,197,24,0.35);
+    border:2px solid #f5c518;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
   }
 </style>
 </head>
 <body>
 
-<h1>🚽 LATRINE</h1>
-<p class="subtitle">PHASE 3 — PRÉPARATION</p>
+<!-- ══ PHASE 3 ══ -->
+<div id="screen-prep" class="screen active">
+  <h1>🚽 LATRINE</h1>
+  <p class="subtitle">PHASE 3 — PRÉPARATION V2</p>
 
-<!-- Skin -->
-<div class="skin-bar">
-  <div class="skin-icon">🌽</div>
-  <div class="skin-info">
-    <div class="skin-name">MR. MAÏS</div>
-    <div class="skin-bonus">+1 CONTRÔLE &nbsp;·&nbsp; -1 NETTOYAGE</div>
+  <div class="skin-bar">
+    <div class="skin-icon">🌽</div>
+    <div>
+      <div class="skin-name">MR. MAÏS</div>
+      <div class="skin-bonus">+1 CONTRÔLE &nbsp;·&nbsp; -1 NETTOYAGE</div>
+    </div>
   </div>
+
+  <div class="slider-block">
+    <div class="slider-label"><span class="slider-title">CONTRÔLE DU TIR</span><span class="slider-value" id="val-controle">–</span></div>
+    <div class="track-container">
+      <div class="track-fill" id="fill-controle" style="background:linear-gradient(90deg,#e63946,#4ade80)"></div>
+      <div class="track-thumb" id="thumb-controle"></div>
+    </div>
+    <div class="minmax"><span>MIN</span><span>MAX</span></div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-label"><span class="slider-title">DIAMÈTRE</span><span class="slider-value" id="val-diametre">–</span></div>
+    <div class="track-container">
+      <div class="track-fill" id="fill-diametre" style="background:linear-gradient(90deg,#e63946,#4ade80)"></div>
+      <div class="track-thumb" id="thumb-diametre"></div>
+    </div>
+    <div class="minmax"><span>MIN</span><span>MAX</span></div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-label"><span class="slider-title">TEMPS DE TIR</span><span class="slider-value" id="val-tir">–</span></div>
+    <div class="track-container">
+      <div class="track-fill" id="fill-tir" style="background:linear-gradient(90deg,#4ade80,#e63946)"></div>
+      <div class="track-thumb" id="thumb-tir"></div>
+    </div>
+    <div class="minmax"><span>MAX</span><span>MIN</span></div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-label"><span class="slider-title">TEMPS DE NETTOYAGE</span><span class="slider-value" id="val-nettoyage">–</span></div>
+    <div class="track-container">
+      <div class="track-fill" id="fill-nettoyage" style="background:linear-gradient(90deg,#e63946,#4ade80)"></div>
+      <div class="track-thumb" id="thumb-nettoyage"></div>
+    </div>
+    <div class="minmax"><span>MIN</span><span>MAX</span></div>
+  </div>
+
+  <div class="timer-zone">
+    <span class="timer-label">DÉCOMPTE</span>
+    <span class="timer-count" id="timer-display">10</span>
+  </div>
+
+  <button class="btn-yellow" id="btn-stop">⏹ STOP</button>
+  <button class="btn-green"  id="btn-next">▶ SUIVANT</button>
 </div>
 
-<!-- Les 4 curseurs -->
-<div class="slider-block">
-  <div class="slider-label">
-    <span class="slider-title">CONTRÔLE DU TIR</span>
-    <span class="slider-value" id="val-controle">–</span>
-  </div>
-  <div class="track-container">
-    <div class="track-fill" id="fill-controle" style="background: linear-gradient(90deg,#e63946,#4ade80);"></div>
-    <div class="track-thumb" id="thumb-controle"></div>
-  </div>
-  <div class="minmax"><span>MIN</span><span>MAX</span></div>
-</div>
-
-<div class="slider-block">
-  <div class="slider-label">
-    <span class="slider-title">DIAMÈTRE</span>
-    <span class="slider-value" id="val-diametre">–</span>
-  </div>
-  <div class="track-container">
-    <div class="track-fill" id="fill-diametre" style="background: linear-gradient(90deg,#e63946,#4ade80);"></div>
-    <div class="track-thumb" id="thumb-diametre"></div>
-  </div>
-  <div class="minmax"><span>MIN</span><span>MAX</span></div>
-</div>
-
-<div class="slider-block">
-  <div class="slider-label">
-    <span class="slider-title">TEMPS DE TIR</span>
-    <span class="slider-value" id="val-tir">–</span>
-  </div>
-  <div class="track-container">
-    <!-- Inversé : MAX à gauche, MIN à droite -->
-    <div class="track-fill" id="fill-tir" style="background: linear-gradient(90deg,#4ade80,#e63946);"></div>
-    <div class="track-thumb" id="thumb-tir"></div>
-  </div>
-  <div class="minmax"><span>MAX</span><span>MIN</span></div>
-</div>
-
-<div class="slider-block">
-  <div class="slider-label">
-    <span class="slider-title">TEMPS DE NETTOYAGE</span>
-    <span class="slider-value" id="val-nettoyage">–</span>
-  </div>
-  <div class="track-container">
-    <div class="track-fill" id="fill-nettoyage" style="background: linear-gradient(90deg,#e63946,#4ade80);"></div>
-    <div class="track-thumb" id="thumb-nettoyage"></div>
-  </div>
-  <div class="minmax"><span>MIN</span><span>MAX</span></div>
-</div>
-
-<!-- Décompte -->
-<div class="timer-zone">
-  <span class="timer-label">DÉCOMPTE</span>
-  <span class="timer-count" id="timer-display">10</span>
-</div>
-
-<!-- Boutons -->
-<button id="btn-stop">⏹ STOP</button>
-<button id="btn-next">▶ SUIVANT</button>
-
-<!-- Popup récap -->
-<div id="popup">
+<!-- Popup récap phase 3 -->
+<div class="popup-overlay" id="popup-prep">
   <div class="popup-box">
     <div class="popup-title">📋 PARAMÈTRES RETENUS</div>
-    <div class="recap-row">
-      <span class="recap-label">Contrôle</span>
-      <span class="recap-val" id="r-controle"></span>
-    </div>
-    <div class="recap-row">
-      <span class="recap-label">Diamètre</span>
-      <span class="recap-val" id="r-diametre"></span>
-    </div>
-    <div class="recap-row">
-      <span class="recap-label">Temps de tir</span>
-      <span class="recap-val" id="r-tir"></span>
-    </div>
-    <div class="recap-row">
-      <span class="recap-label">Nettoyage</span>
-      <span class="recap-val" id="r-nettoyage"></span>
-    </div>
-    <button class="popup-btn" onclick="closePopup()">JOUER →</button>
+    <div class="recap-row"><span class="recap-label">Contrôle</span><span class="recap-val" id="r-controle"></span></div>
+    <div class="recap-row"><span class="recap-label">Diamètre</span><span class="recap-val" id="r-diametre"></span></div>
+    <div class="recap-row"><span class="recap-label">Temps de tir</span><span class="recap-val" id="r-tir"></span></div>
+    <div class="recap-row"><span class="recap-label">Nettoyage</span><span class="recap-val" id="r-nettoyage"></span></div>
+    <button class="popup-btn" id="btn-go-tir">🚽 VISER !</button>
+  </div>
+</div>
+
+<!-- ══ PHASE 4 ══ -->
+<div id="screen-tir" class="screen">
+  <h1>🚽 LATRINE</h1>
+  <p class="subtitle">PHASE 4 — VISÉE V2</p>
+
+  <div class="hud">
+    <div class="hud-score">⭐ <span id="score-display">0</span></div>
+    <div class="hud-params" id="hud-params"></div>
+  </div>
+
+  <div id="toilet-wrap">
+    <canvas id="cvs"></canvas>
+    <div id="countdown-overlay" class="show">3</div>
+  </div>
+
+  <div class="tir-timer">
+    <span>TEMPS DE TIR</span>
+    <span id="tir-timer-display">–</span>
+  </div>
+
+  <!-- Zone de contrôle unique : glisser le doigt -->
+  <div id="joystick-zone">
+    <span class="hint">↑ ← GLISSE ICI POUR VISER → ↓</span>
+    <div id="joystick-dot"></div>
+  </div>
+</div>
+
+<!-- Popup résultat -->
+<div class="popup-overlay" id="popup-tir">
+  <div class="popup-box">
+    <div class="popup-title">🏆 RÉSULTAT DU TIR</div>
+    <div class="recap-row"><span class="recap-label">Score</span><span class="recap-val" id="r-score-tir"></span></div>
+    <div class="recap-row"><span class="recap-label">Dans le trou 🎯</span><span class="recap-val" id="r-trou"></span></div>
+    <div class="recap-row"><span class="recap-label">Porcelaine</span><span class="recap-val" id="r-porcelaine"></span></div>
+    <div class="recap-row"><span class="recap-label">Hors cible ❌</span><span class="recap-val" id="r-hors"></span></div>
+    <button class="popup-btn" id="btn-rejouer">🔄 REJOUER</button>
   </div>
 </div>
 
 <script>
-// ── Configuration ──────────────────────────────────────────
-const DUREE_TOTALE = 10; // secondes avant que tout devienne aléatoire
-
-// Chaque curseur : id, vitesse de déplacement (px/frame), direction de départ
+// ══════════════════════════════════════════════════════════
+// PHASE 3
+// ══════════════════════════════════════════════════════════
 const sliders = [
-  { id: 'controle', speed: 1.2, dir: 1, pos: 0 },
-  { id: 'diametre', speed: 0.9, dir: -1, pos: 50 },
-  { id: 'tir',      speed: 1.5, dir: 1,  pos: 20 },
-  { id: 'nettoyage',speed: 0.7, dir: 1,  pos: 70 },
+  { id:'controle',  speed:1.2, dir:1,  pos:0  },
+  { id:'diametre',  speed:0.9, dir:-1, pos:50 },
+  { id:'tir',       speed:1.5, dir:1,  pos:20 },
+  { id:'nettoyage', speed:0.7, dir:1,  pos:70 },
 ];
-
-// Valeur lisible : 1–10 en fonction de la position (0–100)
-function posToVal(pos) {
-  return Math.max(1, Math.round(pos / 10));
-}
-
-// Label texte court selon le curseur et sa valeur
+function posToVal(p) { return Math.max(1, Math.round(p/10)); }
 function valLabel(id, v) {
-  if (id === 'controle')   return v <= 3 ? 'DIFFICILE' : v <= 7 ? 'MOYEN' : 'FACILE';
-  if (id === 'diametre')   return v <= 3 ? 'PETIT' : v <= 7 ? 'MOYEN' : 'LARGE';
-  if (id === 'tir')        return v <= 3 ? 'COURT' : v <= 7 ? 'MOYEN' : 'LONG';
-  if (id === 'nettoyage')  return v <= 3 ? 'RAPIDE' : v <= 7 ? 'MOYEN' : 'LENT';
+  if (id==='controle')  return v<=3?'DIFFICILE':v<=7?'MOYEN':'FACILE';
+  if (id==='diametre')  return v<=3?'PETIT':v<=7?'MOYEN':'LARGE';
+  if (id==='tir')       return v<=3?'COURT':v<=7?'MOYEN':'LONG';
+  if (id==='nettoyage') return v<=3?'RAPIDE':v<=7?'MOYEN':'LENT';
 }
 
-// ── État ───────────────────────────────────────────────────
-let stopped = false;
-let timeLeft = DUREE_TOTALE;
-let rafId = null;
-let timerInterval = null;
-let frozen = {}; // valeurs figées au STOP
+let prepStopped=false, prepTime=10, prepRaf=null, prepInterval=null, frozen={}, lastTs=null;
 
-// ── Animation des curseurs ─────────────────────────────────
-let lastTime = null;
-
-function animateSliders(ts) {
-  if (stopped) return;
-  if (!lastTime) lastTime = ts;
-  const dt = (ts - lastTime) / 16.67; // normalisé à 60fps
-  lastTime = ts;
-
+function animatePrep(ts) {
+  if (prepStopped) return;
+  if (!lastTs) lastTs=ts;
+  const dt=(ts-lastTs)/16.67; lastTs=ts;
   sliders.forEach(s => {
-    s.pos += s.speed * s.dir * dt;
-    if (s.pos >= 100) { s.pos = 100; s.dir = -1; }
-    if (s.pos <= 0)   { s.pos = 0;   s.dir = 1;  }
-    renderSlider(s);
+    s.pos += s.speed*s.dir*dt;
+    if (s.pos>=100){s.pos=100;s.dir=-1;}
+    if (s.pos<=0)  {s.pos=0;  s.dir=1; }
+    document.getElementById('thumb-'+s.id).style.left = s.pos+'%';
+    document.getElementById('fill-' +s.id).style.width= s.pos+'%';
+    document.getElementById('val-'  +s.id).textContent= valLabel(s.id, posToVal(s.pos));
   });
-
-  rafId = requestAnimationFrame(animateSliders);
+  prepRaf=requestAnimationFrame(animatePrep);
 }
 
-function renderSlider(s) {
-  const thumb = document.getElementById('thumb-' + s.id);
-  const fill  = document.getElementById('fill-'  + s.id);
-  const valEl = document.getElementById('val-'   + s.id);
-  const v = posToVal(s.pos);
-
-  thumb.style.left = s.pos + '%';
-  fill.style.width = s.pos + '%';
-  valEl.textContent = valLabel(s.id, v);
+function startPrepTimer() {
+  document.getElementById('timer-display').textContent=prepTime;
+  prepInterval=setInterval(()=>{
+    prepTime--;
+    document.getElementById('timer-display').textContent=prepTime;
+    if(prepTime<=0){clearInterval(prepInterval);doStop();}
+  },1000);
 }
 
-// ── Décompte ───────────────────────────────────────────────
-function startTimer() {
-  document.getElementById('timer-display').textContent = timeLeft;
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    document.getElementById('timer-display').textContent = timeLeft;
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      autoStop(); // temps écoulé → on fige tout aléatoirement
-    }
-  }, 1000);
-}
-
-function autoStop() {
-  // Si le joueur n'a pas appuyé STOP, on fige les positions actuelles
-  doStop();
-}
-
-// ── STOP ───────────────────────────────────────────────────
 function doStop() {
-  if (stopped) return;
-  stopped = true;
-  cancelAnimationFrame(rafId);
-  clearInterval(timerInterval);
-
-  // Sauvegarder les valeurs
-  sliders.forEach(s => {
-    frozen[s.id] = { pos: s.pos, val: posToVal(s.pos) };
-  });
-
-  document.getElementById('btn-stop').disabled = true;
-  document.getElementById('btn-next').style.display = 'block';
+  if(prepStopped) return;
+  prepStopped=true;
+  cancelAnimationFrame(prepRaf);
+  clearInterval(prepInterval);
+  sliders.forEach(s=>{ frozen[s.id]={pos:s.pos,val:posToVal(s.pos)}; });
+  document.getElementById('btn-stop').disabled=true;
+  document.getElementById('btn-next').style.display='block';
 }
 
 document.getElementById('btn-stop').addEventListener('click', doStop);
-
-// ── SUIVANT → popup récap ──────────────────────────────────
-document.getElementById('btn-next').addEventListener('click', () => {
-  document.getElementById('r-controle').textContent  = valLabel('controle',  frozen.controle.val)  + ' (' + frozen.controle.val  + '/10)';
-  document.getElementById('r-diametre').textContent  = valLabel('diametre',  frozen.diametre.val)  + ' (' + frozen.diametre.val  + '/10)';
-  document.getElementById('r-tir').textContent       = valLabel('tir',       frozen.tir.val)       + ' (' + frozen.tir.val       + '/10)';
-  document.getElementById('r-nettoyage').textContent = valLabel('nettoyage', frozen.nettoyage.val) + ' (' + frozen.nettoyage.val + '/10)';
-  document.getElementById('popup').classList.add('show');
+document.getElementById('btn-next').addEventListener('click', ()=>{
+  ['controle','diametre','tir','nettoyage'].forEach(id=>{
+    document.getElementById('r-'+id).textContent=
+      valLabel(id,frozen[id].val)+' ('+frozen[id].val+'/10)';
+  });
+  document.getElementById('popup-prep').classList.add('show');
 });
 
-function closePopup() {
-  document.getElementById('popup').classList.remove('show');
-  // Ici on passera à la phase 4 plus tard
-  alert('Phase 4 (le tir) — à venir ! 🚽');
+requestAnimationFrame(animatePrep);
+startPrepTimer();
+
+// ══════════════════════════════════════════════════════════
+// PHASE 4
+// ══════════════════════════════════════════════════════════
+document.getElementById('btn-go-tir').addEventListener('click',()=>{
+  document.getElementById('popup-prep').classList.remove('show');
+  startPhase4();
+});
+
+let canvas, ctx, CW, CH;
+let toilet={};
+let viseX, viseY, viseR, viseSpeed;
+let tirRunning=false, tirTimeLeft=0, tirInterval=null, tirRaf=null;
+let scoreTotal=0, pixTrou=0, pixPorc=0, pixHors=0;
+let traceCanvas, traceCtx;
+
+// Joystick
+let joystickActive=false;
+let joyOriginX=0, joyOriginY=0;   // point de départ du touch
+let joyDX=0, joyDY=0;             // delta normalisé -1..1
+
+// Dérive aléatoire
+let driftDX=0, driftDY=0;         // direction actuelle
+let driftSpeed=0;                  // vitesse (selon contrôle phase 3)
+let driftTimer=0;                  // frames avant prochain changement
+let driftInterval=60;              // frames entre changements de direction
+
+function setupCanvas() {
+  canvas=document.getElementById('cvs');
+  const wrap=document.getElementById('toilet-wrap');
+  const rect=wrap.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  CW=Math.round(rect.width*dpr);
+  CH=Math.round(rect.height*dpr);
+  canvas.width=CW; canvas.height=CH;
+  ctx=canvas.getContext('2d');
+
+  traceCanvas=document.createElement('canvas');
+  traceCanvas.width=CW; traceCanvas.height=CH;
+  traceCtx=traceCanvas.getContext('2d');
+
+  toilet={
+    reservoir:{ x:CW*0.25, y:CH*0.03, w:CW*0.50, h:CH*0.13 },
+    cuvetteX:CW*0.50, cuvetteY:CH*0.54,
+    cuvetteRX:CW*0.40, cuvetteRY:CH*0.30,
+    trouX:CW*0.50, trouY:CH*0.57,
+    trouRX:CW*0.18, trouRY:CH*0.13,
+  };
+
+  // Départ de la visée : milieu haut de la cuvette
+  viseX=CW*0.50;
+  viseY=CH*0.28;
+
+  const ctrl = frozen.controle ? frozen.controle.val : 5;
+  const diam = frozen.diametre ? frozen.diametre.val : 5;
+  const tirVal= frozen.tir     ? frozen.tir.val      : 5;
+
+  // Rayon : diamètre 1 → grand cercle, 10 → petit
+  viseR = CW*(0.20 - diam*0.014);
+
+  // Vitesse de déplacement : contrôle 1 → rapide (dur), 10 → lent (facile)
+  // On inverse : mauvais contrôle = visée qui part vite
+  viseSpeed = CW*(0.008 + (10-ctrl)*0.004);
+
+  // Dérive : mauvais contrôle (1) = dérive forte, bon contrôle (10) = dérive faible
+  driftSpeed = CW*(0.001 + (10-ctrl)*0.0025);
+  driftInterval = 30 + ctrl*8; // bon contrôle = direction stable plus longtemps
+  driftTimer=0;
+  // Direction initiale aléatoire
+  const a0=Math.random()*Math.PI*2;
+  driftDX=Math.cos(a0); driftDY=Math.sin(a0);
+
+  tirTimeLeft = 3 + tirVal;
+
+  document.getElementById('hud-params').innerHTML=
+    'Ctrl:'+valLabel('controle',ctrl)+
+    ' &nbsp;|&nbsp; Ø:'+valLabel('diametre',diam)+
+    '<br>Tir: '+tirTimeLeft+'s';
+  document.getElementById('tir-timer-display').textContent=tirTimeLeft+'s';
 }
 
-// ── Démarrage ──────────────────────────────────────────────
-requestAnimationFrame(animateSliders);
-startTimer();
+function startPhase4() {
+  document.getElementById('screen-prep').classList.remove('active');
+  document.getElementById('screen-tir').classList.add('active');
+  setTimeout(()=>{ setupCanvas(); setupJoystick(); startCountdown(); },80);
+}
+
+function startCountdown() {
+  const ov=document.getElementById('countdown-overlay');
+  ov.classList.add('show');
+  let n=3; ov.textContent=n;
+  const iv=setInterval(()=>{
+    n--;
+    if(n<=0){ clearInterval(iv); ov.classList.remove('show'); beginTir(); }
+    else ov.textContent=n;
+  },900);
+}
+
+function beginTir() {
+  tirRunning=true;
+  scoreTotal=0; pixTrou=0; pixPorc=0; pixHors=0;
+  tirInterval=setInterval(()=>{
+    tirTimeLeft--;
+    document.getElementById('tir-timer-display').textContent=tirTimeLeft+'s';
+    if(tirTimeLeft<=0) endTir();
+  },1000);
+  tirRaf=requestAnimationFrame(gameTick);
+}
+
+function gameTick() {
+  if(!tirRunning) return;
+
+  // Changement de direction de dérive aléatoire
+  driftTimer--;
+  if(driftTimer<=0) {
+    driftTimer=driftInterval + Math.floor(Math.random()*driftInterval*0.5);
+    const a=Math.random()*Math.PI*2;
+    driftDX=Math.cos(a); driftDY=Math.sin(a);
+  }
+
+  // Dérive permanente (toujours active)
+  viseX += driftDX * driftSpeed;
+  viseY += driftDY * driftSpeed;
+
+  // Correction du joueur via joystick (contrecarre la dérive)
+  if(joystickActive) {
+    viseX += joyDX * viseSpeed;
+    viseY += joyDY * viseSpeed;
+  }
+
+  // Rebond sur les bords (la visée ne sort pas du canvas)
+  if(viseX<=viseR)    { viseX=viseR;    driftDX=Math.abs(driftDX);  }
+  if(viseX>=CW-viseR) { viseX=CW-viseR; driftDX=-Math.abs(driftDX); }
+  if(viseY<=viseR)    { viseY=viseR;    driftDY=Math.abs(driftDY);  }
+  if(viseY>=CH-viseR) { viseY=CH-viseR; driftDY=-Math.abs(driftDY); }
+
+  // Zone détectée
+  const zone=getZone(viseX,viseY);
+  traceCtx.beginPath();
+  traceCtx.arc(viseX,viseY, viseR*0.32, 0, Math.PI*2);
+  if(zone==='trou')      { traceCtx.fillStyle='rgba(255,220,0,0.75)'; pixTrou++; }
+  else if(zone==='porc') { traceCtx.fillStyle='rgba(180,100,40,0.50)'; pixPorc++; }
+  else                   { traceCtx.fillStyle='rgba(100,60,20,0.40)';  pixHors++; }
+  traceCtx.fill();
+
+  scoreTotal=Math.max(0, pixTrou*5 + pixPorc*1 - pixHors*2);
+  document.getElementById('score-display').textContent=scoreTotal;
+
+  drawToilet();
+  tirRaf=requestAnimationFrame(gameTick);
+}
+
+function getZone(x,y) {
+  const dx1=(x-toilet.trouX)/toilet.trouRX, dy1=(y-toilet.trouY)/toilet.trouRY;
+  if(dx1*dx1+dy1*dy1<=1) return 'trou';
+  const dx2=(x-toilet.cuvetteX)/toilet.cuvetteRX, dy2=(y-toilet.cuvetteY)/toilet.cuvetteRY;
+  if(dx2*dx2+dy2*dy2<=1) return 'porc';
+  return 'hors';
+}
+
+function drawToilet() {
+  ctx.clearRect(0,0,CW,CH);
+  // Sol
+  ctx.fillStyle='#b5c4b1'; ctx.fillRect(0,0,CW,CH);
+  // Réservoir
+  const r=toilet.reservoir;
+  ctx.fillStyle='#e8e8e8';
+  ctx.beginPath(); ctx.roundRect(r.x,r.y,r.w,r.h,8); ctx.fill();
+  ctx.strokeStyle='#ccc'; ctx.lineWidth=2; ctx.stroke();
+  // Abattant
+  ctx.fillStyle='#f0f0f0';
+  ctx.beginPath();
+  ctx.ellipse(toilet.cuvetteX,toilet.cuvetteY,toilet.cuvetteRX+CW*0.04,toilet.cuvetteRY+CH*0.04,0,0,Math.PI*2);
+  ctx.fill(); ctx.strokeStyle='#ccc'; ctx.lineWidth=3; ctx.stroke();
+  // Cuvette
+  ctx.fillStyle='#fff';
+  ctx.beginPath();
+  ctx.ellipse(toilet.cuvetteX,toilet.cuvetteY,toilet.cuvetteRX,toilet.cuvetteRY,0,0,Math.PI*2);
+  ctx.fill(); ctx.strokeStyle='#ddd'; ctx.lineWidth=2; ctx.stroke();
+  // Trou
+  ctx.fillStyle='#1a3a5c';
+  ctx.beginPath();
+  ctx.ellipse(toilet.trouX,toilet.trouY,toilet.trouRX,toilet.trouRY,0,0,Math.PI*2);
+  ctx.fill();
+  // Trace
+  ctx.drawImage(traceCanvas,0,0);
+  // Visée
+  ctx.beginPath(); ctx.arc(viseX,viseY,viseR,0,Math.PI*2);
+  ctx.strokeStyle='rgba(245,197,24,0.9)'; ctx.lineWidth=3; ctx.stroke();
+  ctx.strokeStyle='#f5c518'; ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(viseX-10,viseY); ctx.lineTo(viseX+10,viseY);
+  ctx.moveTo(viseX,viseY-10); ctx.lineTo(viseX,viseY+10);
+  ctx.stroke();
+}
+
+function endTir() {
+  if(!tirRunning) return;
+  tirRunning=false;
+  cancelAnimationFrame(tirRaf);
+  clearInterval(tirInterval);
+  document.getElementById('r-score-tir').textContent=scoreTotal+' pts';
+  document.getElementById('r-trou').textContent=pixTrou+' touches ✅';
+  document.getElementById('r-porcelaine').textContent=pixPorc+' touches';
+  document.getElementById('r-hors').textContent=pixHors+' touches ❌';
+  document.getElementById('popup-tir').classList.add('show');
+}
+
+// ── Joystick zone ─────────────────────────────────────────
+// Le delta est calculé par rapport au point de départ du touch.
+// Zone de sensibilité : 40px de déplacement = vitesse max.
+const SENS = 40;
+
+function setupJoystick() {
+  const zone=document.getElementById('joystick-zone');
+  const dot =document.getElementById('joystick-dot');
+
+  function onStart(cx,cy) {
+    const rect=zone.getBoundingClientRect();
+    joyOriginX=cx-rect.left;
+    joyOriginY=cy-rect.top;
+    joystickActive=true;
+    dot.style.display='block';
+    dot.style.left=joyOriginX+'px';
+    dot.style.top =joyOriginY+'px';
+  }
+  function onMove(cx,cy) {
+    if(!joystickActive) return;
+    const rect=zone.getBoundingClientRect();
+    const dx=(cx-rect.left)-joyOriginX;
+    const dy=(cy-rect.top) -joyOriginY;
+    // Normalise sur SENS px
+    joyDX=Math.max(-1,Math.min(1,dx/SENS));
+    joyDY=Math.max(-1,Math.min(1,dy/SENS));
+    // Déplace le point visuel
+    dot.style.left=(joyOriginX+dx)+'px';
+    dot.style.top =(joyOriginY+dy)+'px';
+  }
+  function onEnd() {
+    joystickActive=false;
+    joyDX=0; joyDY=0;
+    dot.style.display='none';
+  }
+
+  // Touch
+  zone.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.touches[0]; onStart(t.clientX,t.clientY); },{ passive:false });
+  zone.addEventListener('touchmove',  e=>{ e.preventDefault(); const t=e.touches[0]; onMove(t.clientX,t.clientY);  },{ passive:false });
+  zone.addEventListener('touchend',   e=>{ e.preventDefault(); onEnd(); },{ passive:false });
+  zone.addEventListener('touchcancel',e=>{ e.preventDefault(); onEnd(); },{ passive:false });
+
+  // Souris (test desktop)
+  zone.addEventListener('mousedown', e=>{ onStart(e.clientX,e.clientY); });
+  zone.addEventListener('mousemove', e=>{ onMove(e.clientX,e.clientY);  });
+  zone.addEventListener('mouseup',   ()=>onEnd());
+  zone.addEventListener('mouseleave',()=>onEnd());
+}
+
+document.getElementById('btn-rejouer').addEventListener('click',()=>location.reload());
 </script>
 </body>
 </html>
