@@ -170,7 +170,7 @@
 <!-- ══ PHASE 1 — CHOIX DU LEVEL ══ -->
 <div id="screen-map" class="screen active">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V10</p>
+  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V11</p>
 
   <!-- HUD ressources -->
   <div style="display:flex;justify-content:space-between;width:100%;max-width:380px;margin-bottom:12px;">
@@ -207,7 +207,7 @@
 <!-- ══ PHASE 3 ══ -->
 <div id="screen-prep" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 3 — PRÉPARATION V10</p>
+  <p class="subtitle">PHASE 3 — PRÉPARATION V11</p>
 
   <div class="skin-bar">
     <div class="skin-icon">🌽</div>
@@ -277,7 +277,7 @@
 <!-- ══ PHASE 4 ══ -->
 <div id="screen-tir" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 4 — VISÉE V10</p>
+  <p class="subtitle">PHASE 4 — VISÉE V11</p>
 
   <div class="hud">
     <div class="hud-score">⭐ <span id="score-display">0</span></div>
@@ -300,7 +300,7 @@
 <!-- ══ PHASE 5 — NETTOYAGE ══ -->
 <div id="screen-nettoyage" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 5 — NETTOYAGE V10</p>
+  <p class="subtitle">PHASE 5 — NETTOYAGE V11</p>
 
   <div class="hud">
     <div class="hud-score">🧹 <span id="score-nettoyage">0</span> pts</div>
@@ -349,7 +349,7 @@
 <!-- ══ PHASE 6 — RÉSULTAT ══ -->
 <div id="screen-resultat" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 6 — RÉSULTAT V10</p>
+  <p class="subtitle">PHASE 6 — RÉSULTAT V11</p>
 
   <!-- Balayettes gagnées -->
   <div id="balayettes-display" style="font-size:3.5em;text-align:center;margin:18px 0 6px;letter-spacing:8px;">🧹🧹🧹</div>
@@ -590,11 +590,11 @@ let tirRunning=false, tirTimeLeft=0, tirInterval=null, tirRaf=null;
 let scoreTotal=0, pixTrou=0, pixPorc=0, pixHors=0;
 let traceCanvas, traceCtx;
 
-// Mouches
+// Mouches (size calculée dans setupCanvas en px réels)
 const MOUCHES = [
-  { x:0, y:0, vx:0, vy:0, size:8, bonus:500, multi:false, color:'#111' },
-  { x:0, y:0, vx:0, vy:0, size:8, bonus:0,   multi:true,  color:'#8B0000' },
-  { x:0, y:0, vx:0, vy:0, size:7, bonus:300, multi:false, color:'#222' },
+  { x:0, y:0, vx:0, vy:0, size:0, bonus:500, multi:false },
+  { x:0, y:0, vx:0, vy:0, size:0, bonus:0,   multi:true  },
+  { x:0, y:0, vx:0, vy:0, size:0, bonus:300, multi:false },
 ];
 let mouchesActives = false;
 
@@ -656,12 +656,13 @@ function setupCanvas() {
 
   tirTimeLeft = 3 + tirVal;
 
-  // Init mouches — positions aléatoires dans la cuvette
+  // Init mouches — taille et vitesse proportionnelles au canvas réel
   MOUCHES.forEach(m => {
+    m.size = CW * 0.06;  // ~6% de la largeur canvas = bien visible
     m.x = CW*(0.3 + Math.random()*0.4);
     m.y = CH*(0.4 + Math.random()*0.25);
     const angle = Math.random()*Math.PI*2;
-    const spd = CW*0.012;
+    const spd = CW*0.018;
     m.vx = Math.cos(angle)*spd;
     m.vy = Math.sin(angle)*spd;
     m.hit = false;
@@ -813,11 +814,15 @@ function drawToilet() {
   ctx.drawImage(traceCanvas,0,0);
 
   // Mouches
-  MOUCHES.forEach(m => {
+  MOUCHES.forEach((m, i) => {
     if(m.hit) return;
     ctx.save();
-    ctx.font = m.size*2+'px serif';
+    ctx.font = m.size+'px serif';
     ctx.textAlign='center'; ctx.textBaseline='middle';
+    // Mouche multiplicatrice en rouge
+    if(m.multi) {
+      ctx.shadowColor='#e63946'; ctx.shadowBlur=8;
+    }
     ctx.fillText('🪰', m.x, m.y);
     ctx.restore();
   });
