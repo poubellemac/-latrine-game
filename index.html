@@ -170,7 +170,7 @@
 <!-- ══ PHASE 1 — CHOIX DU LEVEL ══ -->
 <div id="screen-map" class="screen active">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V11</p>
+  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V12</p>
 
   <!-- HUD ressources -->
   <div style="display:flex;justify-content:space-between;width:100%;max-width:380px;margin-bottom:12px;">
@@ -194,6 +194,7 @@
 <div class="popup-overlay" id="popup-level">
   <div class="popup-box">
     <div class="level-popup-title" id="lvl-popup-title">NIVEAU 1</div>
+    <div id="lvl-desc" style="font-size:0.72em;color:#4ade80;margin-bottom:10px;min-height:1em;"></div>
     <div class="recap-row"><span class="recap-label">Meilleur score</span><span class="recap-val" id="lvl-best-score">–</span></div>
     <div class="recap-row"><span class="recap-label">Balayettes</span><span class="recap-val" id="lvl-best-bala">–</span></div>
     <div class="recap-row"><span class="recap-label">Statut</span><span class="recap-val" id="lvl-statut">–</span></div>
@@ -207,7 +208,7 @@
 <!-- ══ PHASE 3 ══ -->
 <div id="screen-prep" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 3 — PRÉPARATION V11</p>
+  <p class="subtitle">PHASE 3 — PRÉPARATION V12</p>
 
   <div class="skin-bar">
     <div class="skin-icon">🌽</div>
@@ -277,7 +278,7 @@
 <!-- ══ PHASE 4 ══ -->
 <div id="screen-tir" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 4 — VISÉE V11</p>
+  <p class="subtitle">PHASE 4 — VISÉE V12</p>
 
   <div class="hud">
     <div class="hud-score">⭐ <span id="score-display">0</span></div>
@@ -300,7 +301,7 @@
 <!-- ══ PHASE 5 — NETTOYAGE ══ -->
 <div id="screen-nettoyage" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 5 — NETTOYAGE V11</p>
+  <p class="subtitle">PHASE 5 — NETTOYAGE V12</p>
 
   <div class="hud">
     <div class="hud-score">🧹 <span id="score-nettoyage">0</span> pts</div>
@@ -349,7 +350,7 @@
 <!-- ══ PHASE 6 — RÉSULTAT ══ -->
 <div id="screen-resultat" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 6 — RÉSULTAT V11</p>
+  <p class="subtitle">PHASE 6 — RÉSULTAT V12</p>
 
   <!-- Balayettes gagnées -->
   <div id="balayettes-display" style="font-size:3.5em;text-align:center;margin:18px 0 6px;letter-spacing:8px;">🧹🧹🧹</div>
@@ -389,20 +390,87 @@
 // PHASE 1 — CARTE DES NIVEAUX
 // ══════════════════════════════════════════════════════════
 
-// Données des niveaux (simulées — viendront d'une BDD plus tard)
-// balayettes: 0=jamais joué, 1/2/3=score obtenu, -1=locked
-const LEVELS = [
-  { id:1, bala:3, score:480, locked:false },
-  { id:2, bala:2, score:310, locked:false },
-  { id:3, bala:1, score:145, locked:false },
-  { id:4, bala:0, score:0,   locked:false }, // débloqué mais pas joué
-  { id:5, bala:-1,score:0,   locked:true  },
-  { id:6, bala:-1,score:0,   locked:true  },
-  { id:7, bala:-1,score:0,   locked:true  },
-  { id:8, bala:-1,score:0,   locked:true  },
-  { id:9, bala:-1,score:0,   locked:true  },
-  { id:10,bala:-1,score:0,   locked:true  },
+// ── Définition des 10 stages ──────────────────────────────
+// params: controle/diametre/tir/nettoyage → valeur fixe (1-10) ou null = aléatoire
+// educatif: true = message d'aide affiché
+const STAGES = [
+  {
+    id:1, nom:'Préhistoire', icon:'🦕', educatif:true,
+    desc:'Apprends les bases — tout est facile !',
+    params:{ controle:10, diametre:8, tir:8, nettoyage:8 },
+    toilette:'prehistoire',
+    zones:{ trou:8, porcelaine:2, sol:-1 },
+  },
+  {
+    id:2, nom:'Âge de Pierre', icon:'🪨', educatif:true,
+    desc:'Le contrôle devient difficile — concentre-toi !',
+    params:{ controle:null, diametre:8, tir:8, nettoyage:8 },
+    toilette:'pierre',
+    zones:{ trou:8, porcelaine:2, sol:-1 },
+  },
+  {
+    id:3, nom:'Égypte', icon:'🏺', educatif:true,
+    desc:'Le diamètre varie — attention à la taille !',
+    params:{ controle:8, diametre:null, tir:8, nettoyage:8 },
+    toilette:'egypte',
+    zones:{ trou:7, porcelaine:3, sol:-2 },
+  },
+  {
+    id:4, nom:'Grèce Antique', icon:'🏛️', educatif:true,
+    desc:'Le temps de tir change — fais vite !',
+    params:{ controle:8, diametre:8, tir:null, nettoyage:8 },
+    toilette:'grece',
+    zones:{ trou:7, porcelaine:2, sol:-2 },
+  },
+  {
+    id:5, nom:'Empire Romain', icon:'⚔️', educatif:true,
+    desc:'Le nettoyage devient difficile — frotte bien !',
+    params:{ controle:8, diametre:8, tir:8, nettoyage:null },
+    toilette:'rome',
+    zones:{ trou:6, porcelaine:3, sol:-2 },
+  },
+  {
+    id:6, nom:'Moyen-Âge', icon:'🏰', educatif:true,
+    desc:'Tout varie mais doucement — le vrai jeu commence !',
+    params:{ controle:null, diametre:null, tir:null, nettoyage:null },
+    tirLimit:{ controle:[6,10], diametre:[6,10], tir:[6,10], nettoyage:[6,10] },
+    toilette:'moyenage',
+    zones:{ trou:6, porcelaine:2, sol:-2, reservoir:-1 },
+  },
+  {
+    id:7, nom:'Pirates', icon:'⚓', educatif:false,
+    desc:'En mer, tout bouge !',
+    params:{ controle:null, diametre:null, tir:null, nettoyage:null },
+    toilette:'pirate',
+    zones:{ trou:5, porcelaine:2, sol:-2, reservoir:-1, abattant:-1 },
+  },
+  {
+    id:8, nom:'Far West', icon:'🤠', educatif:false,
+    desc:'Vise vite, cowboy !',
+    params:{ controle:null, diametre:null, tir:null, nettoyage:null },
+    toilette:'farwest',
+    zones:{ trou:5, porcelaine:1, sol:-3, reservoir:-1, abattant:-1 },
+  },
+  {
+    id:9, nom:'Futur', icon:'🚀', educatif:false,
+    desc:'Toilettes du futur — mais toujours autant de boulot.',
+    params:{ controle:null, diametre:null, tir:null, nettoyage:null },
+    toilette:'futur',
+    zones:{ trou:6, porcelaine:1, sol:-3, reservoir:-2, abattant:-2 },
+  },
+  {
+    id:10, nom:'Les 3 Coquilles', icon:'🐚', educatif:false,
+    desc:'Mode Demolition Man — bonne chance !',
+    params:{ controle:null, diametre:null, tir:null, nettoyage:null },
+    toilette:'coquilles',
+    zones:{ trou:7, porcelaine:1, sol:-4, reservoir:-2, abattant:-3 },
+  },
 ];
+
+// État progression (balayettes: -1=locked, 0=nouveau, 1/2/3=score)
+const LEVELS = STAGES.map((s,i) => ({
+  id: s.id, bala: i===0?0:-1, score:0, locked: i>0
+}));
 
 let selectedLevel = null;
 
@@ -454,8 +522,8 @@ function buildMap() {
     node.style.top  = pos.y + 'px';
 
     // Emoji thème (préhistoire → futur)
-    const themes = ['🪨','🏛️','⚔️','🏰','⚓','🎩','🚂','✈️','🚀','🛸'];
-    const icon = lvl.locked ? '🔒' : themes[i] || '🚽';
+    const stage = STAGES.find(s=>s.id===lvl.id);
+    const icon = lvl.locked ? '🔒' : (stage ? stage.icon : '🚽');
 
     node.innerHTML =
       '<div style="font-size:1.3em;">' + icon + '</div>' +
@@ -486,7 +554,12 @@ function balaStr(bala) {
 
 function openLevelPopup(lvl) {
   selectedLevel = lvl;
-  document.getElementById('lvl-popup-title').textContent = 'NIVEAU ' + lvl.id;
+  const stageInfo = STAGES.find(s=>s.id===lvl.id);
+  document.getElementById('lvl-popup-title').textContent =
+    'NIVEAU ' + lvl.id + ' — ' + (stageInfo ? stageInfo.nom.toUpperCase() : '');
+  // Afficher description éducative
+  const descEl = document.getElementById('lvl-desc');
+  if(descEl) descEl.textContent = stageInfo && stageInfo.educatif ? '💡 '+stageInfo.desc : '';
   document.getElementById('lvl-best-score').textContent  = lvl.score > 0 ? lvl.score + ' pts' : '–';
   document.getElementById('lvl-best-bala').textContent   = lvl.bala > 0 ? balaStr(lvl.bala) : '–';
   document.getElementById('lvl-statut').textContent      =
@@ -499,8 +572,42 @@ document.getElementById('lvl-btn-jouer').addEventListener('click', () => {
   document.getElementById('popup-level').classList.remove('show');
   document.getElementById('screen-map').classList.remove('active');
   document.getElementById('screen-prep').classList.add('active');
-  startPrep(); // démarre les curseurs maintenant
+  // Appliquer le thème du stage sélectionné
+  if(selectedLevel) {
+    const stage = STAGES.find(s=>s.id===selectedLevel.id);
+    if(stage) {
+      currentTheme = stage.toilette;
+      // Appliquer les paramètres éducatifs
+      applyStageParams(stage);
+    }
+  }
+  startPrep();
 });
+
+// Applique les paramètres fixes d'un stage éducatif
+// Les curseurs dont le param est null restent aléatoires
+let stageOverride = {}; // {controle:8, diametre:null, ...}
+
+function applyStageParams(stage) {
+  stageOverride = stage.params || {};
+  // Message éducatif
+  if(stage.educatif && stage.desc) {
+    showEduMsg(stage.desc);
+  }
+}
+
+function showEduMsg(txt) {
+  let el = document.getElementById('edu-msg');
+  if(!el) {
+    el=document.createElement('div');
+    el.id='edu-msg';
+    el.style.cssText='position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#16213e;border:1px solid #f5c518;border-radius:8px;padding:8px 16px;font-size:0.72em;color:#f5c518;text-align:center;z-index:100;max-width:300px;font-family:Courier New,monospace;';
+    document.body.appendChild(el);
+  }
+  el.textContent='💡 '+txt;
+  el.style.opacity='1';
+  setTimeout(()=>{ el.style.transition='opacity 1s'; el.style.opacity='0'; },4000);
+}
 
 buildMap();
 
@@ -635,9 +742,14 @@ function setupCanvas() {
   viseX=CW*0.50;
   viseY=CH*0.28;
 
-  const ctrl = frozen.controle ? frozen.controle.val : 5;
-  const diam = frozen.diametre ? frozen.diametre.val : 5;
-  const tirVal= frozen.tir     ? frozen.tir.val      : 5;
+  // Si le stage impose un param fixe, on l'utilise ; sinon on prend la valeur du curseur
+  function stageVal(key, fallback) {
+    const ov = (typeof stageOverride !== 'undefined') ? stageOverride[key] : null;
+    return (ov !== null && ov !== undefined) ? ov : fallback;
+  }
+  const ctrl   = stageVal('controle',  frozen.controle  ? frozen.controle.val  : 5);
+  const diam   = stageVal('diametre',  frozen.diametre  ? frozen.diametre.val  : 5);
+  const tirVal = stageVal('tir',       frozen.tir       ? frozen.tir.val       : 5);
 
   // Rayon : diamètre 1 → grand cercle, 10 → petit
   viseR = CW*(0.20 - diam*0.014);
@@ -786,27 +898,55 @@ function getZone(x,y) {
   return 'hors';
 }
 
+// Palettes visuelles par thème
+const THEMES = {
+  prehistoire:{ sol:'#8B7355', reservoir:'#6B5B45', abattant:'#A0896A', cuvette:'#C4A882', trou:'#3D2B1A', accent:'#D4956A' },
+  pierre:     { sol:'#9E9E8A', reservoir:'#78786A', abattant:'#B4B4A0', cuvette:'#D2D2C0', trou:'#2E2E28', accent:'#A8A890' },
+  egypte:     { sol:'#D4A847', reservoir:'#C49030', abattant:'#E8C060', cuvette:'#F5DFA0', trou:'#5C3A1A', accent:'#E8A020' },
+  grece:      { sol:'#C8D8E8', reservoir:'#A0B8CC', abattant:'#E0EAF4', cuvette:'#F5F8FF', trou:'#1A3A5C', accent:'#4A90D9' },
+  rome:       { sol:'#C8A878', reservoir:'#A88858', abattant:'#E0C090', cuvette:'#F5E8C8', trou:'#4A2010', accent:'#CC4020' },
+  moyenage:   { sol:'#7A6A5A', reservoir:'#5A4A3A', abattant:'#9A8A7A', cuvette:'#C0B0A0', trou:'#2A1A0A', accent:'#8A6A3A' },
+  pirate:     { sol:'#5C4A30', reservoir:'#3A2A18', abattant:'#7A6040', cuvette:'#A08060', trou:'#0A1A2A', accent:'#8B7536' },
+  farwest:    { sol:'#C8A060', reservoir:'#A07840', abattant:'#E0B870', cuvette:'#F5D890', trou:'#3A1A08', accent:'#C05020' },
+  futur:      { sol:'#1A2A3A', reservoir:'#0A1A2A', abattant:'#2A4A5A', cuvette:'#3A6A7A', trou:'#00D4FF', accent:'#00FFCC' },
+  coquilles:  { sol:'#C8E8D8', reservoir:'#A0C8B8', abattant:'#E0F0E8', cuvette:'#F0FFF8', trou:'#006644', accent:'#00AA88' },
+};
+
+let currentTheme = 'prehistoire'; // mis à jour au choix du level
+
+function getTheme() { return THEMES[currentTheme] || THEMES.prehistoire; }
+
 function drawToilet() {
+  const T = getTheme();
   ctx.clearRect(0,0,CW,CH);
-  // Sol
-  ctx.fillStyle='#b5c4b1'; ctx.fillRect(0,0,CW,CH);
+  // Sol (motif selon thème)
+  ctx.fillStyle=T.sol; ctx.fillRect(0,0,CW,CH);
+  // Déco sol selon thème
+  drawSolDeco(ctx, T, CW, CH);
   // Réservoir
   const r=toilet.reservoir;
-  ctx.fillStyle='#e8e8e8';
-  ctx.beginPath(); ctx.roundRect(r.x,r.y,r.w,r.h,8); ctx.fill();
-  ctx.strokeStyle='#ccc'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle=T.reservoir;
+  ctx.beginPath(); ctx.roundRect(r.x,r.y,r.w,r.h,10); ctx.fill();
+  ctx.strokeStyle=T.accent; ctx.lineWidth=3; ctx.stroke();
   // Abattant
-  ctx.fillStyle='#f0f0f0';
+  ctx.fillStyle=T.abattant;
   ctx.beginPath();
   ctx.ellipse(toilet.cuvetteX,toilet.cuvetteY,toilet.cuvetteRX+CW*0.04,toilet.cuvetteRY+CH*0.04,0,0,Math.PI*2);
-  ctx.fill(); ctx.strokeStyle='#ccc'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fill(); ctx.strokeStyle=T.accent; ctx.lineWidth=3; ctx.stroke();
   // Cuvette
-  ctx.fillStyle='#fff';
+  ctx.fillStyle=T.cuvette;
   ctx.beginPath();
   ctx.ellipse(toilet.cuvetteX,toilet.cuvetteY,toilet.cuvetteRX,toilet.cuvetteRY,0,0,Math.PI*2);
-  ctx.fill(); ctx.strokeStyle='#ddd'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fill(); ctx.strokeStyle=T.accent; ctx.lineWidth=2; ctx.stroke();
   // Trou
-  ctx.fillStyle='#1a3a5c';
+  ctx.fillStyle=T.trou;
+  ctx.beginPath();
+  ctx.ellipse(toilet.trouX,toilet.trouY,toilet.trouRX,toilet.trouRY,0,0,Math.PI*2);
+  ctx.fill();
+  // Halo trou
+  const grd=ctx.createRadialGradient(toilet.trouX,toilet.trouY,0,toilet.trouX,toilet.trouY,toilet.trouRX);
+  grd.addColorStop(0,'rgba(0,0,0,0.4)'); grd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grd;
   ctx.beginPath();
   ctx.ellipse(toilet.trouX,toilet.trouY,toilet.trouRX,toilet.trouRY,0,0,Math.PI*2);
   ctx.fill();
@@ -836,6 +976,52 @@ function drawToilet() {
   ctx.textAlign='center';
   ctx.textBaseline='middle';
   ctx.fillText('🪣', viseX, viseY);
+}
+
+// Décorations de sol selon thème
+function drawSolDeco(ctx, T, W, H) {
+  ctx.save();
+  ctx.globalAlpha=0.18;
+  const th = currentTheme;
+  if(th==='prehistoire') {
+    // Empreintes de dinosaure
+    for(let i=0;i<5;i++){
+      ctx.fillStyle='#5A3A1A';
+      ctx.beginPath(); ctx.ellipse(W*(0.1+i*0.18), H*(0.15+i*0.12), W*0.04, H*0.025, 0.3, 0, Math.PI*2); ctx.fill();
+    }
+  } else if(th==='egypte') {
+    // Hiéroglyphes simplifiés (lignes)
+    ctx.strokeStyle='#8B6914'; ctx.lineWidth=3;
+    for(let i=0;i<4;i++){
+      ctx.beginPath(); ctx.moveTo(W*(0.05+i*0.25),H*0.05); ctx.lineTo(W*(0.05+i*0.25),H*0.95); ctx.stroke();
+    }
+  } else if(th==='grece') {
+    // Motif méandre grec
+    ctx.strokeStyle='#4A90D9'; ctx.lineWidth=4;
+    for(let i=0;i<8;i++){
+      ctx.beginPath(); ctx.moveTo(W*(i*0.14),0); ctx.lineTo(W*(i*0.14),H); ctx.stroke();
+    }
+  } else if(th==='futur') {
+    // Grille cyber
+    ctx.strokeStyle='#00FFCC'; ctx.lineWidth=1;
+    for(let i=0;i<10;i++){
+      ctx.beginPath(); ctx.moveTo(W*(i*0.1),0); ctx.lineTo(W*(i*0.1),H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,H*(i*0.1)); ctx.lineTo(W,H*(i*0.1)); ctx.stroke();
+    }
+  } else if(th==='pirate') {
+    // Planches de bois
+    ctx.strokeStyle='#3A2A18'; ctx.lineWidth=5;
+    for(let i=0;i<6;i++){
+      ctx.beginPath(); ctx.moveTo(0,H*(i*0.18)); ctx.lineTo(W,H*(i*0.18)); ctx.stroke();
+    }
+  } else if(th==='coquilles') {
+    // 3 coquilles
+    for(let i=0;i<3;i++){
+      ctx.fillStyle='#00AA88';
+      ctx.beginPath(); ctx.arc(W*(0.2+i*0.3), H*0.85, W*0.06, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.restore();
 }
 
 // Message bonus flottant
@@ -950,26 +1136,28 @@ function beginNet() {
 }
 
 function drawNet() {
+  const T = getTheme();
   netCtx.clearRect(0,0,netCW,netCH);
   // Sol
-  netCtx.fillStyle='#b5c4b1'; netCtx.fillRect(0,0,netCW,netCH);
+  netCtx.fillStyle=T.sol; netCtx.fillRect(0,0,netCW,netCH);
+  drawSolDeco(netCtx, T, netCW, netCH);
   // Réservoir
   const r=netToilet.reservoir;
-  netCtx.fillStyle='#e8e8e8';
-  netCtx.beginPath(); netCtx.roundRect(r.x,r.y,r.w,r.h,8); netCtx.fill();
-  netCtx.strokeStyle='#ccc'; netCtx.lineWidth=2; netCtx.stroke();
+  netCtx.fillStyle=T.reservoir;
+  netCtx.beginPath(); netCtx.roundRect(r.x,r.y,r.w,r.h,10); netCtx.fill();
+  netCtx.strokeStyle=T.accent; netCtx.lineWidth=3; netCtx.stroke();
   // Abattant
-  netCtx.fillStyle='#f0f0f0';
+  netCtx.fillStyle=T.abattant;
   netCtx.beginPath();
   netCtx.ellipse(netToilet.cuvetteX,netToilet.cuvetteY,netToilet.cuvetteRX+netCW*0.04,netToilet.cuvetteRY+netCH*0.04,0,0,Math.PI*2);
-  netCtx.fill(); netCtx.strokeStyle='#ccc'; netCtx.lineWidth=3; netCtx.stroke();
+  netCtx.fill(); netCtx.strokeStyle=T.accent; netCtx.lineWidth=3; netCtx.stroke();
   // Cuvette
-  netCtx.fillStyle='#fff';
+  netCtx.fillStyle=T.cuvette;
   netCtx.beginPath();
   netCtx.ellipse(netToilet.cuvetteX,netToilet.cuvetteY,netToilet.cuvetteRX,netToilet.cuvetteRY,0,0,Math.PI*2);
-  netCtx.fill(); netCtx.strokeStyle='#ddd'; netCtx.lineWidth=2; netCtx.stroke();
+  netCtx.fill(); netCtx.strokeStyle=T.accent; netCtx.lineWidth=2; netCtx.stroke();
   // Trou
-  netCtx.fillStyle='#1a3a5c';
+  netCtx.fillStyle=T.trou;
   netCtx.beginPath();
   netCtx.ellipse(netToilet.trouX,netToilet.trouY,netToilet.trouRX,netToilet.trouRY,0,0,Math.PI*2);
   netCtx.fill();
