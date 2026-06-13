@@ -1,0 +1,2 @@
+# -latrine-game
+ latrine game
