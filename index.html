@@ -161,7 +161,7 @@
 <!-- ══ PHASE 1 — CHOIX DU LEVEL ══ -->
 <div id="screen-map" class="screen active">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V8</p>
+  <p class="subtitle">PHASE 1 — CHOIX DU LEVEL V9</p>
 
   <!-- HUD ressources -->
   <div style="display:flex;justify-content:space-between;width:100%;max-width:380px;margin-bottom:12px;">
@@ -198,7 +198,7 @@
 <!-- ══ PHASE 3 ══ -->
 <div id="screen-prep" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 3 — PRÉPARATION V8</p>
+  <p class="subtitle">PHASE 3 — PRÉPARATION V9</p>
 
   <div class="skin-bar">
     <div class="skin-icon">🌽</div>
@@ -250,7 +250,7 @@
   </div>
 
   <button class="btn-yellow" id="btn-stop">⏹ STOP</button>
-  <button class="btn-green"  id="btn-next">▶ SUIVANT</button>
+  <!-- btn-next supprimé : popup s'ouvre automatiquement -->
 </div>
 
 <!-- Popup récap phase 3 -->
@@ -268,7 +268,7 @@
 <!-- ══ PHASE 4 ══ -->
 <div id="screen-tir" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 4 — VISÉE V8</p>
+  <p class="subtitle">PHASE 4 — VISÉE V9</p>
 
   <div class="hud">
     <div class="hud-score">⭐ <span id="score-display">0</span></div>
@@ -291,7 +291,7 @@
 <!-- ══ PHASE 5 — NETTOYAGE ══ -->
 <div id="screen-nettoyage" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 5 — NETTOYAGE V8</p>
+  <p class="subtitle">PHASE 5 — NETTOYAGE V9</p>
 
   <div class="hud">
     <div class="hud-score">🧹 <span id="score-nettoyage">0</span> pts</div>
@@ -303,9 +303,14 @@
     <div id="countdown-net" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.72);border-radius:12px;align-items:center;justify-content:center;font-size:4em;font-weight:bold;color:#f5c518;z-index:5;"></div>
   </div>
 
-  <div class="tir-timer" id="net-timer-bar">
-    <span>TEMPS DE NETTOYAGE</span>
-    <span id="net-timer-display">–</span>
+  <!-- Jauge temps nettoyage -->
+  <div style="width:100%;max-width:340px;margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:0.68em;color:#aaa;margin-bottom:4px;">
+      <span>⏱ TEMPS RESTANT</span><span id="net-timer-display">–</span>
+    </div>
+    <div style="background:#0f3460;border-radius:8px;height:16px;overflow:hidden;">
+      <div id="net-time-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#e63946,#f5c518,#4ade80);border-radius:8px;transition:width 1s linear;"></div>
+    </div>
   </div>
 
   <div id="net-progress-wrap" style="width:100%;max-width:340px;margin-bottom:10px;">
@@ -335,7 +340,7 @@
 <!-- ══ PHASE 6 — RÉSULTAT ══ -->
 <div id="screen-resultat" class="screen">
   <h1>🚽 LATRINE</h1>
-  <p class="subtitle">PHASE 6 — RÉSULTAT V8</p>
+  <p class="subtitle">PHASE 6 — RÉSULTAT V9</p>
 
   <!-- Balayettes gagnées -->
   <div id="balayettes-display" style="font-size:3.5em;text-align:center;margin:18px 0 6px;letter-spacing:8px;">🧹🧹🧹</div>
@@ -542,17 +547,15 @@ function doStop() {
   clearInterval(prepInterval);
   sliders.forEach(s=>{ frozen[s.id]={pos:s.pos,val:posToVal(s.pos)}; });
   document.getElementById('btn-stop').disabled=true;
-  document.getElementById('btn-next').style.display='block';
-}
-
-document.getElementById('btn-stop').addEventListener('click', doStop);
-document.getElementById('btn-next').addEventListener('click', ()=>{
+  // Ouvre directement le récap sans clic supplémentaire
   ['controle','diametre','tir','nettoyage'].forEach(id=>{
     document.getElementById('r-'+id).textContent=
       valLabel(id,frozen[id].val)+' ('+frozen[id].val+'/10)';
   });
   document.getElementById('popup-prep').classList.add('show');
-});
+}
+
+document.getElementById('btn-stop').addEventListener('click', doStop);
 
 requestAnimationFrame(animatePrep);
 startPrepTimer();
@@ -571,6 +574,14 @@ let viseX, viseY, viseR, viseSpeed;
 let tirRunning=false, tirTimeLeft=0, tirInterval=null, tirRaf=null;
 let scoreTotal=0, pixTrou=0, pixPorc=0, pixHors=0;
 let traceCanvas, traceCtx;
+
+// Mouches
+const MOUCHES = [
+  { x:0, y:0, vx:0, vy:0, size:8, bonus:500, multi:false, color:'#111' },
+  { x:0, y:0, vx:0, vy:0, size:8, bonus:0,   multi:true,  color:'#8B0000' },
+  { x:0, y:0, vx:0, vy:0, size:7, bonus:300, multi:false, color:'#222' },
+];
+let mouchesActives = false;
 
 // Joystick
 let joystickActive=false;
@@ -629,6 +640,18 @@ function setupCanvas() {
   driftDX=Math.cos(a0); driftDY=Math.sin(a0);
 
   tirTimeLeft = 3 + tirVal;
+
+  // Init mouches — positions aléatoires dans la cuvette
+  MOUCHES.forEach(m => {
+    m.x = CW*(0.3 + Math.random()*0.4);
+    m.y = CH*(0.4 + Math.random()*0.25);
+    const angle = Math.random()*Math.PI*2;
+    const spd = CW*0.012;
+    m.vx = Math.cos(angle)*spd;
+    m.vy = Math.sin(angle)*spd;
+    m.hit = false;
+  });
+  mouchesActives = true;
 
   document.getElementById('hud-params').innerHTML=
     'Ctrl:'+valLabel('controle',ctrl)+
@@ -692,6 +715,35 @@ function gameTick() {
   if(viseY<=viseR)    { viseY=viseR;    driftDY=Math.abs(driftDY);  }
   if(viseY>=CH-viseR) { viseY=CH-viseR; driftDY=-Math.abs(driftDY); }
 
+  // Mouvement mouches erratique
+  MOUCHES.forEach(m => {
+    if(m.hit) return;
+    // Changement de direction aléatoire
+    if(Math.random()<0.06) {
+      const a=Math.random()*Math.PI*2;
+      const spd=CW*0.010;
+      m.vx=Math.cos(a)*spd; m.vy=Math.sin(a)*spd;
+    }
+    m.x+=m.vx; m.y+=m.vy;
+    // Rebond bords cuvette
+    if(m.x<CW*0.12||m.x>CW*0.88){m.vx*=-1;}
+    if(m.y<CH*0.25||m.y>CH*0.85){m.vy*=-1;}
+    // Collision avec visée
+    const dist=Math.sqrt((m.x-viseX)**2+(m.y-viseY)**2);
+    if(dist < viseR+m.size) {
+      m.hit=true;
+      if(m.multi) {
+        // Multiplicateur x2 sur le score actuel
+        scoreTotal = scoreTotal*2;
+        showBonusMsg('x2 MULTIPLICATEUR ! 🪰', '#e63946');
+      } else {
+        scoreTotal += m.bonus;
+        showBonusMsg('+'+m.bonus+' pts 🪰', '#f5c518');
+      }
+      document.getElementById('score-display').textContent=scoreTotal;
+    }
+  });
+
   // Zone détectée
   const zone=getZone(viseX,viseY);
   traceCtx.beginPath();
@@ -742,6 +794,17 @@ function drawToilet() {
   ctx.fill();
   // Trace
   ctx.drawImage(traceCanvas,0,0);
+
+  // Mouches
+  MOUCHES.forEach(m => {
+    if(m.hit) return;
+    ctx.save();
+    ctx.font = m.size*2+'px serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🪰', m.x, m.y);
+    ctx.restore();
+  });
+
   // Visée : cercle guide + brosse emoji au centre
   ctx.beginPath(); ctx.arc(viseX,viseY,viseR,0,Math.PI*2);
   ctx.strokeStyle='rgba(245,197,24,0.75)'; ctx.lineWidth=3; ctx.stroke();
@@ -751,6 +814,23 @@ function drawToilet() {
   ctx.textAlign='center';
   ctx.textBaseline='middle';
   ctx.fillText('🪣', viseX, viseY);
+}
+
+// Message bonus flottant
+let bonusTimeout = null;
+function showBonusMsg(txt, color) {
+  let el = document.getElementById('bonus-msg');
+  if(!el) {
+    el = document.createElement('div');
+    el.id='bonus-msg';
+    el.style.cssText='position:absolute;top:20%;left:50%;transform:translateX(-50%);font-size:1.1em;font-weight:bold;font-family:Courier New,monospace;pointer-events:none;z-index:10;transition:opacity 0.5s;text-shadow:0 0 8px #000;';
+    document.getElementById('toilet-wrap').appendChild(el);
+  }
+  el.textContent=txt;
+  el.style.color=color;
+  el.style.opacity='1';
+  clearTimeout(bonusTimeout);
+  bonusTimeout=setTimeout(()=>{ el.style.opacity='0'; },900);
 }
 
 function endTir() {
@@ -836,9 +916,12 @@ function startNetCountdown() {
 
 function beginNet() {
   netRunning=true; netScoreTotal=0;
+  const netTotalTime = netTimeLeft;
   netInterval=setInterval(()=>{
     netTimeLeft--;
     document.getElementById('net-timer-display').textContent=netTimeLeft+'s';
+    const pctTime = Math.max(0, netTimeLeft/netTotalTime*100);
+    document.getElementById('net-time-bar').style.width=pctTime+'%';
     if(netTimeLeft<=0) endNet();
   },1000);
   setupNetTouch();
